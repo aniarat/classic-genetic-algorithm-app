@@ -1,4 +1,5 @@
 import sys
+import random
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, \
@@ -8,33 +9,41 @@ from Helpers.crossingMethods import single_point_crossing
 from Helpers.lern import lern
 from Helpers.mutationMethods import test_mutation
 from Helpers.parents import initParents, printParents
-from Helpers.selectionMethods import best_selection
+from Helpers.selectionMethods import select_best_individuals, roulette_wheel_selection, tournament_selection
+
 
 def f(x):
     return x**2 - 4*x + 3
 class MainWindow(QWidget):
+  
     numberOfParents = 10
     numberOfHromosome = 24
     numberOfEpoch = 100
     corssingProb = 0.1
     mutationProb = 0.1
+    
+
     def start_calc(self):
         lern(number_of_epoch = self.numberOfEpoch,
          chromsome_length = self.numberOfHromosome,
          number_of_parents = self.numberOfParents,
          crossing_function = single_point_crossing,
          mutation_function = test_mutation,
-         selection_function = best_selection,
+         selection_function=self.selection_function,
          F = f)
+        
     def set_selection_method(self, button: QRadioButton):
+        population = [individual for individual in range(20)]
+        fitness_values = [random.randint(1, 100) for _ in range(20)]
         #TODO: Dodać implementacje
         match button.text():
             case "Najlepszych":
-                print(button.text())
+                self.selection_function = select_best_individuals(population, fitness_values, self.numberOfParents)
             case "Koło ruletki":
-                print(button.text())
+                self.selection_function = roulette_wheel_selection(population, fitness_values, self.numberOfParents)
             case "Selekcja turniejowa":
-                print(button.text())
+                self.selection_function = tournament_selection(population, fitness_values, 3, self.numberOfParents)
+
     def set_crossing_method(self, button: QRadioButton):
         #TODO: Dodać implementacje
         match button.text():
@@ -79,6 +88,7 @@ class MainWindow(QWidget):
         self.mutationLabel.setText(f'Prawdopodobieństwo mutacji {self.mutationProb}')
     def __init__(self):
         super().__init__()
+        self.selection_function = None
 
         self.setWindowTitle("OE Proj 2. Wieczorek, Piwko, Ratowska")
         layoutItems = []
