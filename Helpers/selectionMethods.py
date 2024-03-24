@@ -22,7 +22,9 @@ def select_best_individuals(population, fitness_values, num_parents):
     
     selected_parents = [individual[0] for individual in sorted_population[:num_parents]]
     
-    print("Najlepsza: ", selected_parents)
+    print("Najlepsza: ")
+    for parent in selected_parents:
+        print(parent)
     return selected_parents
 
 def roulette_wheel_selection(population, fitness_values, num_parents):
@@ -37,7 +39,9 @@ def roulette_wheel_selection(population, fitness_values, num_parents):
             if rand <= cp:
                 selected_parents.append(population[i])
                 break
-    print("Ruletka: ", selected_parents)            
+    print("Ruletka: ")   
+    for parent in selected_parents:
+        print(parent)      
     return selected_parents
 
 def tournament_selection(population, fitness_values, tournament_size, num_parents):
@@ -54,5 +58,7 @@ def tournament_selection(population, fitness_values, tournament_size, num_parent
         
         selected_parents.append(winner)
 
-    print("Turniejowa: ", selected_parents)
+    print("Turniejowa: ") 
+    for parent in selected_parents:
+        print(parent) 
     return selected_parents
