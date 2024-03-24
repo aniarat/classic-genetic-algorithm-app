@@ -1,5 +1,7 @@
 import sys
 import random
+import numpy as np
+from Helpers.decimalBinaryMath import binary_to_decimal
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, \
@@ -16,6 +18,7 @@ def f(x):
     return x**2 - 4*x + 3
 class MainWindow(QWidget):
   
+    populationSize = 40
     numberOfParents = 10
     numberOfHromosome = 24
     numberOfEpoch = 100
@@ -25,6 +28,7 @@ class MainWindow(QWidget):
 
     def start_calc(self):
         lern(number_of_epoch = self.numberOfEpoch,
+             size_of_population = self.populationSize,
          chromsome_length = self.numberOfHromosome,
          number_of_parents = self.numberOfParents,
          crossing_function = single_point_crossing,
@@ -33,8 +37,12 @@ class MainWindow(QWidget):
          F = f)
         
     def set_selection_method(self, button: QRadioButton):
-        population = [individual for individual in range(20)]
-        fitness_values = [random.randint(1, 100) for _ in range(20)]
+        population = [np.random.randint(0, 2, self.numberOfHromosome) for _ in range(self.populationSize)]
+        
+        #population = [individual for individual in range(20)]
+        fitness_values = [f(binary_to_decimal(individual)) for individual in population]
+        #fitness_values = [f(individual) for individual in population]
+        print(fitness_values)
         #TODO: Dodać implementacje
         match button.text():
             case "Najlepszych":
@@ -71,6 +79,11 @@ class MainWindow(QWidget):
             case "2 punktowa":
                 print(button.text())
 
+
+
+    def set_population_size(self, val):
+        self.populationSize = val
+        self.populationSizeLabel.setText(f'Wielkość populacji {self.populationSize}')
     def set_number_of_parents(self, val):
         self.numberOfParents = val
         self.numberOfParentsLabel.setText(f'Ilość rodziców {self.numberOfParents}')
@@ -95,6 +108,17 @@ class MainWindow(QWidget):
         button = QPushButton("Oblicz")
         button.clicked.connect(self.start_calc)
         layoutItems.append(button)
+
+        #Wielkośc populacji
+        self.populationSizeLabel = QLabel(f'Wielkość populacji {self.populationSize}')
+        layoutItems.append(self.populationSizeLabel)
+
+        populationSizeSlider = QSlider(Qt.Horizontal)
+        populationSizeSlider.setMinimum(1)
+        populationSizeSlider.setMaximum(1000)
+        populationSizeSlider.setValue(self.populationSize)
+        populationSizeSlider.valueChanged.connect(self.set_population_size)
+        layoutItems.append(populationSizeSlider)
 
         # Paretns
         self.numberOfParentsLabel = QLabel(f'Ilość rodziców {self.numberOfParents}')

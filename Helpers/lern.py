@@ -5,6 +5,7 @@ from Helpers.parents import initParents
 
 
 def lern(number_of_epoch: int,
+         size_of_population: int,
          chromsome_length: int,
          number_of_parents: int,
          crossing_function,
