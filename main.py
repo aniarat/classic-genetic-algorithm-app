@@ -7,11 +7,12 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, \
     QRadioButton, QButtonGroup
 
-from Helpers.crossingMethods import single_point_crossing
 from Helpers.lern import lern
 from Helpers.mutationMethods import test_mutation
 from Helpers.parents import initParents, printParents
-from Helpers.selectionMethods import select_best_individuals, roulette_wheel_selection, tournament_selection
+
+from Helpers.selectionMethods import BestSelection, RouletteWheelSelection, TournamentSelection
+from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, ThreePointCrossover, UniformCrossover, GrainCrossover, ScanningCrossover, PartialCopyCrossover
 
 
 def f(x):
@@ -31,44 +32,55 @@ class MainWindow(QWidget):
              size_of_population = self.populationSize,
          chromsome_length = self.numberOfHromosome,
          number_of_parents = self.numberOfParents,
-         crossing_function = single_point_crossing,
+         crossing_function = self.crossing_function,
          mutation_function = test_mutation,
          selection_function=self.selection_function,
          F = f)
         
     def set_selection_method(self, button: QRadioButton):
         population = [np.random.randint(0, 2, self.numberOfHromosome) for _ in range(self.populationSize)]
-        
-        #population = [individual for individual in range(20)]
+     
         fitness_values = [f(binary_to_decimal(individual)) for individual in population]
-        #fitness_values = [f(individual) for individual in population]
-        print(fitness_values)
+        #print(fitness_values)
         #TODO: Dodać implementacje
         match button.text():
             case "Najlepszych":
-                self.selection_function = select_best_individuals(population, fitness_values, self.numberOfParents)
+                selection_method = BestSelection()
             case "Koło ruletki":
-                self.selection_function = roulette_wheel_selection(population, fitness_values, self.numberOfParents)
+                selection_method = RouletteWheelSelection()
             case "Selekcja turniejowa":
-                self.selection_function = tournament_selection(population, fitness_values, 3, self.numberOfParents)
+                tournament_size = 3
+                selection_method = TournamentSelection(tournament_size)
+
+        self.selection_function = selection_method.select(population, fitness_values, self.numberOfParents)
+        
+       
 
     def set_crossing_method(self, button: QRadioButton):
+        selected_population = self.selection_function
         #TODO: Dodać implementacje
         match button.text():
             case "Krzyżowanie 1 punktowe":
-                print(button.text())
+                crossing_method = SinglePointCrossover()
             case "Krzyżowanie 2 punktowe":
-                print(button.text())
+                crossing_method = TwoPointCrossover()
             case "Krzyżowanie 3 punktowe":
-                print(button.text())
+                crossing_method = ThreePointCrossover()
+            case "Krzyżowanie jednorodne":
+                probability = self.corssingProb
+                crossing_method = UniformCrossover(probability)
             case "Krzyżowanie ziarniste":
-                print(button.text())
+                crossing_method = GrainCrossover()
             case "Krzyżowanie skanujące":
-                print(button.text())
+                num_parents = self.numberOfParents
+                crossing_method = ScanningCrossover(num_parents)
             case "Krzyżowanie częściowe":
-                print(button.text())
+                crossing_method = PartialCopyCrossover()
             case "Krzyżowanie wielowymiarowe":
-                print(button.text())
+                print("Wielowymiarowe")
+
+        self.crossing_function = crossing_method.crossover(selected_population)
+
     def set_mutation_method(self, button: QRadioButton):
         #TODO: Dodać implementacje
         match button.text():
@@ -102,6 +114,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.selection_function = None
+        self.crossing_function = None
 
         self.setWindowTitle("OE Proj 2. Wieczorek, Piwko, Ratowska")
         layoutItems = []
@@ -154,6 +167,16 @@ class MainWindow(QWidget):
         numOfEpochSlider.valueChanged.connect(self.set_number_of_epoch)
         layoutItems.append(numOfEpochSlider)
 
+        self.crossingProbLabel = QLabel(f'Prawdopodobieństwo krzyżowania {self.corssingProb}')
+        layoutItems.append(self.crossingProbLabel)
+
+        corssingProbSlider = QSlider(Qt.Horizontal)
+        corssingProbSlider.setMinimum(1)
+        corssingProbSlider.setMaximum(1000)
+        corssingProbSlider.setValue(self.corssingProb*1000)
+        corssingProbSlider.valueChanged.connect(self.set_corossing_prob)
+        layoutItems.append(corssingProbSlider)
+
 
         # Metoda Selekcji
         selectinMetchodLabel = QLabel('Wybierz metode selekcji')
@@ -183,10 +206,11 @@ class MainWindow(QWidget):
         rK1 = QRadioButton("Krzyżowanie 1 punktowe", self)
         rK2 = QRadioButton("Krzyżowanie 2 punktowe", self)
         rK3 = QRadioButton("Krzyżowanie 3 punktowe", self)
-        rK4 = QRadioButton("Krzyżowanie ziarniste", self)
-        rK5 = QRadioButton("Krzyżowanie skanujące", self)
-        rK6 = QRadioButton("Krzyżowanie częściowe", self)
-        rK7 = QRadioButton("Krzyżowanie wielowymiarowe", self)
+        rK4 = QRadioButton("Krzyżowanie jednorodne", self)
+        rK5 = QRadioButton("Krzyżowanie ziarniste", self)
+        rK6 = QRadioButton("Krzyżowanie skanujące", self)
+        rK7 = QRadioButton("Krzyżowanie częściowe", self)
+        rK8 = QRadioButton("Krzyżowanie wielowymiarowe", self)
         rK1.setChecked(True)
         crossingGroup.addButton(rK1)
         crossingGroup.addButton(rK2)
@@ -195,6 +219,7 @@ class MainWindow(QWidget):
         crossingGroup.addButton(rK5)
         crossingGroup.addButton(rK6)
         crossingGroup.addButton(rK7)
+        crossingGroup.addButton(rK8)
 
         crossingGroup.buttonClicked.connect(self.set_crossing_method)
 
@@ -205,15 +230,10 @@ class MainWindow(QWidget):
         layoutItems.append(rK5)
         layoutItems.append(rK6)
         layoutItems.append(rK7)
-        self.crossingProbLabel = QLabel(f'Prawdopodobieństwo krzyżowania {self.corssingProb}')
-        layoutItems.append(self.crossingProbLabel)
+        layoutItems.append(rK8)
 
-        corssingProbSlider = QSlider(Qt.Horizontal)
-        corssingProbSlider.setMinimum(1)
-        corssingProbSlider.setMaximum(1000)
-        corssingProbSlider.setValue(self.corssingProb*1000)
-        corssingProbSlider.valueChanged.connect(self.set_corossing_prob)
-        layoutItems.append(corssingProbSlider)
+
+        
 
 
         # Mutacje
