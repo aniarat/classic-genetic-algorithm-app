@@ -8,10 +8,8 @@ class SinglePointCrossover(CrossoverMethod):
     def crossover(self, population):
         parent1, parent2 = random.sample(population, 2)
         crossing_point = random.randint(1, min(len(parent1), len(parent2)) - 1)
-        child1 = parent1[:crossing_point].tolist() + parent2[crossing_point:].tolist()
-        child2 = parent2[:crossing_point].tolist() + parent1[crossing_point:].tolist()
-        print(child1)
-        print(child2)
+        child1 = parent1[:crossing_point] + parent2[crossing_point:]
+        child2 = parent2[:crossing_point] + parent1[crossing_point:]
         return child1, child2
 
 class TwoPointCrossover(CrossoverMethod):
@@ -19,20 +17,16 @@ class TwoPointCrossover(CrossoverMethod):
         
         parent1, parent2 = random.sample(population, 2)
         crossover_points = sorted(random.sample(range(1, min(len(parent1), len(parent2))), 2))
-        child1 = parent1[:crossover_points[0]].tolist() + parent2[crossover_points[0]:crossover_points[1]].tolist() + parent1[crossover_points[1]:].tolist()
-        child2 = parent2[:crossover_points[0]].tolist() + parent1[crossover_points[0]:crossover_points[1]].tolist() + parent2[crossover_points[1]:].tolist()
-        print(child1)
-        print(child2)
+        child1 = parent1[:crossover_points[0]] + parent2[crossover_points[0]:crossover_points[1]] + parent1[crossover_points[1]:]
+        child2 = parent2[:crossover_points[0]] + parent1[crossover_points[0]:crossover_points[1]] + parent2[crossover_points[1]:]
         return child1, child2
 
 class ThreePointCrossover(CrossoverMethod):
     def crossover(self, population):
         parent1, parent2 = random.sample(population, 2)
         crossover_points = sorted(random.sample(range(1, min(len(parent1), len(parent2))), 3))
-        child1 = parent1[:crossover_points[0]].tolist() + parent2[crossover_points[0]:crossover_points[1]].tolist() + parent1[crossover_points[1]:crossover_points[2]].tolist() + parent2[crossover_points[2]:].tolist()
-        child2 = parent2[:crossover_points[0]].tolist() + parent1[crossover_points[0]:crossover_points[1]].tolist() + parent2[crossover_points[1]:crossover_points[2]].tolist() + parent1[crossover_points[2]:].tolist()
-        print(child1)
-        print(child2)
+        child1 = parent1[:crossover_points[0]] + parent2[crossover_points[0]:crossover_points[1]] + parent1[crossover_points[1]:crossover_points[2]] + parent2[crossover_points[2]:]
+        child2 = parent2[:crossover_points[0]] + parent1[crossover_points[0]:crossover_points[1]] + parent2[crossover_points[1]:crossover_points[2]] + parent1[crossover_points[2]:]
         return child1, child2
 
 class UniformCrossover(CrossoverMethod):
@@ -50,8 +44,6 @@ class UniformCrossover(CrossoverMethod):
             else:
                 child1.append(gene1)
                 child2.append(gene2)
-        print(child1)
-        print(child2)
         return child1, child2
 
 class GrainCrossover(CrossoverMethod):
@@ -63,7 +55,6 @@ class GrainCrossover(CrossoverMethod):
                 child.append(gene1)
             else:
                 child.append(gene2)
-        print(child)
         return child
 
 class ScanningCrossover(CrossoverMethod):
@@ -78,8 +69,7 @@ class ScanningCrossover(CrossoverMethod):
         for j in range(chromosome_length):
             chosen_parent_index = random.randint(0, self.numberOfParents - 1)
             child[j] = parents[chosen_parent_index][j]
-        
-        print(child)
+
         return child
 
 class PartialCopyCrossover(CrossoverMethod):
@@ -88,10 +78,8 @@ class PartialCopyCrossover(CrossoverMethod):
         chromosome_length = len(parent1)
         cp1 = random.randint(0, chromosome_length - 2)
         cp2 = random.randint(cp1 + 1, chromosome_length - 1)
-        child1 = parent1[:cp1].tolist() + [parent1[i] if parent1[i] == 1 else parent2[i] for i in range(cp1, cp2)] + parent1[cp2:].tolist()
-        child2 = parent2[:cp1].tolist() + [parent2[i] if parent2[i] == 1 else parent1[i] for i in range(cp1, cp2)] + parent2[cp2:].tolist()
-        print(child1)
-        print(child2)
+        child1 = parent1[:cp1] + [parent1[i] if parent1[i] == 1 else parent2[i] for i in range(cp1, cp2)] + parent1[cp2:]
+        child2 = parent2[:cp1] + [parent2[i] if parent2[i] == 1 else parent1[i] for i in range(cp1, cp2)] + parent2[cp2:]
         return child1, child2
     
 class MultivariateCrossover(CrossoverMethod):
@@ -113,14 +101,12 @@ class MultivariateCrossover(CrossoverMethod):
             rnd = random.random()
             if rnd <= self.corssingProb:
                 crossover_point = random.randint(0, len(parent1[i]) - 1)
-                child1.append((parent1[i][:crossover_point].tolist() + parent2[i][crossover_point:]).tolist())
-                child2.append((parent2[i][:crossover_point].tolist() + parent1[i][crossover_point:]).tolist())
+                child1.append((parent1[i][:crossover_point] + parent2[i][crossover_point:]))
+                child2.append((parent2[i][:crossover_point] + parent1[i][crossover_point:]))
             else:
             # Jeśli krzyżowanie nie jest wykonane, potomstwo to kopie rodziców
-                child1.append(parent1[i].tolist())
-                child2.append(parent2[i].tolist())
+                child1.append(parent1[i])
+                child2.append(parent2[i])
 
-        print(child1)
-        print(child2)
         return child1, child2
     

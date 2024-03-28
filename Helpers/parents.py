@@ -120,7 +120,8 @@
 import numpy as np
 def initParents(chromosome_length: int, number_of_parents: int) -> list:
     return [list(np.random.randint(0, 2, chromosome_length)) for _ in range(number_of_parents)]
-
+def initPopulation(chromosome_length: int, population_size: int) -> list:
+    return [list(np.random.randint(0, 2, chromosome_length)) for _ in range(population_size)]
 
 def printParents(parents: list) -> None:
     for parent in parents:

@@ -11,9 +11,6 @@ class BestSelection(SelectionMethod):
         combined_population = list(zip(population, fitness_values))
         sorted_population = sorted(combined_population, key=lambda x: x[1])
         selected_parents = [individual[0] for individual in sorted_population[:num_parents]]
-        print("Najlepsza:")
-        for parent in selected_parents:
-            print(parent)
         return selected_parents
 
 
@@ -30,9 +27,6 @@ class RouletteWheelSelection(SelectionMethod):
                 if rand <= cp:
                     selected_parents.append(population[i])
                     break
-        print("Ruletka:")
-        for parent in selected_parents:
-            print(parent)
         return selected_parents
 
 class TournamentSelection(SelectionMethod):
@@ -48,7 +42,4 @@ class TournamentSelection(SelectionMethod):
             winner_index = tournament_indices[tournament_fitness_values.index(min(tournament_fitness_values))]
             winner = population[winner_index]
             selected_parents.append(winner)
-        print("Turniejowa:")
-        for parent in selected_parents:
-            print(parent)
         return selected_parents

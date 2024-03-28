@@ -1,269 +1,200 @@
 import sys
-import random
-import numpy as np
-from Helpers.decimalBinaryMath import binary_to_decimal
+from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods
+from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox
 
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, \
-    QRadioButton, QButtonGroup
-
+from Helpers.layout import makeSlider
 from Helpers.lern import lern
 from Helpers.mutationMethods import test_mutation
-from Helpers.parents import initParents, printParents
 
 from Helpers.selectionMethods import BestSelection, RouletteWheelSelection, TournamentSelection
-from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, ThreePointCrossover, UniformCrossover, GrainCrossover, ScanningCrossover, PartialCopyCrossover, MultivariateCrossover
+from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, ThreePointCrossover, UniformCrossover, \
+    GrainCrossover, ScanningCrossover, PartialCopyCrossover, MultivariateCrossover
 
 
 def f(x):
-    return x**2 - 4*x + 3
+    return x ** 2 - 4 * x + 3
+
+
 class MainWindow(QWidget):
-  
     populationSize = 40
     numberOfParents = 10
-    numberOfHromosome = 24
+    numberOfChromosome = 24
     numberOfEpoch = 100
-    corssingProb = 0.1
+    crossingProb = 0.1
     mutationProb = 0.1
-    
+
+    selection_method = BestSelection().select
+    crossing_method = SinglePointCrossover().crossover
 
     def start_calc(self):
-        lern(number_of_epoch = self.numberOfEpoch,
-            size_of_population = self.populationSize,
-            chromsome_length = self.numberOfHromosome,
-            number_of_parents = self.numberOfParents,
-            crossing_function = self.crossing_function,
-            mutation_function = test_mutation,
-            selection_function=self.selection_function,
-            F = f)
-        
-    def set_selection_method(self, button: QRadioButton):
-        population = [np.random.randint(0, 2, self.numberOfHromosome) for _ in range(self.populationSize)]
-     
-        fitness_values = [f(binary_to_decimal(individual)) for individual in population]
-     
-        match button.text():
-            case "Najlepszych":
-                selection_method = BestSelection()
-            case "Koło ruletki":
-                selection_method = RouletteWheelSelection()
-            case "Selekcja turniejowa":
+        lern(number_of_epoch=self.numberOfEpoch,
+             size_of_population=self.populationSize,
+             chromosome_length=self.numberOfChromosome,
+             number_of_parents=self.numberOfParents,
+             crossing_function=self.crossing_method,
+             mutation_function=test_mutation,
+             selection_function=self.selection_method,
+             F=f)
+
+    def set_selection_method(self, option: int):
+        match option:
+            case SelectionMechods.BEST.value:
+                self.selection_method = BestSelection().select
+            case SelectionMechods.ROULETTE.value:
+                self.selection_method = RouletteWheelSelection().select
+            case SelectionMechods.TOURNAMENT.value:
                 tournament_size = 3
-                selection_method = TournamentSelection(tournament_size)
+                self.selection_method = TournamentSelection(tournament_size).select
 
-        self.selection_function = selection_method.select(population, fitness_values, self.numberOfParents)
-        
-    def set_crossing_method(self, button: QRadioButton):
-        selected_population = self.selection_function
-
-        match button.text():
-            case "Krzyżowanie 1 punktowe":
-                crossing_method = SinglePointCrossover()
-            case "Krzyżowanie 2 punktowe":
-                crossing_method = TwoPointCrossover()
-            case "Krzyżowanie 3 punktowe":
-                crossing_method = ThreePointCrossover()
-            case "Krzyżowanie jednorodne":
-                probability = self.corssingProb
-                crossing_method = UniformCrossover(probability)
-            case "Krzyżowanie ziarniste":
-                crossing_method = GrainCrossover()
-            case "Krzyżowanie skanujące":
+    def set_crossing_method(self, option: int):
+        match option:
+            case CrossingMechods.SINGLE_POINT.value:
+                self.crossing_method = SinglePointCrossover().crossover
+            case CrossingMechods.DOUBLE_POINT.value:
+                self.crossing_method = TwoPointCrossover().crossover
+            case CrossingMechods.TRIPLE_POINT.value:
+                self.crossing_method = ThreePointCrossover().crossover
+            case CrossingMechods.UNIFORM.value:
+                probability = self.crossingProb
+                self.crossing_method = UniformCrossover(probability).crossover
+            case CrossingMechods.GRAIN.value:
+                self.crossing_method = GrainCrossover().crossover
+            case CrossingMechods.SCANNING.value:
                 num_parents = self.numberOfParents
-                crossing_method = ScanningCrossover(num_parents)
-            case "Krzyżowanie częściowe":
-                crossing_method = PartialCopyCrossover()
-            case "Krzyżowanie wielowymiarowe":
-                probability = self.corssingProb
+                self.crossing_method = ScanningCrossover(num_parents).crossover
+            case CrossingMechods.PARTIAL.value:
+                self.crossing_method = PartialCopyCrossover().crossover
+            case CrossingMechods.MULTIVARIATE.value:
+                probability = self.crossingProb
                 q = 3
-                crossing_method = MultivariateCrossover(probability, q)
+                self.crossing_method = MultivariateCrossover(probability, q).crossover
 
-        self.crossing_function = crossing_method.crossover(selected_population)
-
-    def set_mutation_method(self, button: QRadioButton):
-        #TODO: Dodać implementacje
-        match button.text():
-            case "Brzegowa":
-                print(button.text())
-            case "1 punktowa":
-                print(button.text())
-            case "2 punktowa":
-                print(button.text())
+    def set_mutation_method(self, option: int):
+        # TODO: Dodać implementacje
+        match option:
+            case MutationMechods.EDGE.value:
+                print(option)
+            case MutationMechods.SINGLE_POINT.value:
+                print(option)
+            case MutationMechods.DOUBLE_POINT.value:
+                print(option)
 
     def set_population_size(self, val):
         self.populationSize = val
         self.populationSizeLabel.setText(f'Wielkość populacji {self.populationSize}')
+
     def set_number_of_parents(self, val):
         self.numberOfParents = val
         self.numberOfParentsLabel.setText(f'Ilość rodziców {self.numberOfParents}')
+
     def set_number_of_epoch(self, val):
         self.numberOfEpoch = val
         self.numberOfEpochLabel.setText(f'Ilość epok {self.numberOfEpoch}')
+
     def set_number_of_hromosome(self, val):
-        self.numberOfHromosome = val
-        self.numberOfHromosomeLabel.setText(f'Długość hromosomu {self.numberOfHromosome}')
+        self.numberOfChromosome = val
+        self.numberOfChromosomeLabel.setText(f'Długość hromosomu {self.numberOfChromosome}')
+
     def set_corossing_prob(self, val):
-        self.corssingProb = val/1000
-        self.crossingProbLabel.setText(f'Prawdopodobieństwo krzyżowania {self.corssingProb}')
+        self.crossingProb = val / 1000
+        self.crossingProbLabel.setText(f'Prawdopodobieństwo krzyżowania {self.crossingProb}')
+
     def set_mutation_prob(self, val):
-        self.mutationProb = val/1000
+        self.mutationProb = val / 1000
         self.mutationLabel.setText(f'Prawdopodobieństwo mutacji {self.mutationProb}')
+
     def __init__(self):
         super().__init__()
         self.selection_function = None
         self.crossing_function = None
 
         self.setWindowTitle("OE Proj 2. Wieczorek, Piwko, Ratowska")
-        layoutItems = []
+        layout_items = []
         button = QPushButton("Oblicz")
         button.clicked.connect(self.start_calc)
-        layoutItems.append(button)
+        layout_items.append(button)
 
-        #Wielkośc populacji
+        # Population Size
         self.populationSizeLabel = QLabel(f'Wielkość populacji {self.populationSize}')
-        layoutItems.append(self.populationSizeLabel)
+        layout_items.append(self.populationSizeLabel)
 
-        populationSizeSlider = QSlider(Qt.Horizontal)
-        populationSizeSlider.setMinimum(1)
-        populationSizeSlider.setMaximum(1000)
-        populationSizeSlider.setValue(self.populationSize)
-        populationSizeSlider.valueChanged.connect(self.set_population_size)
-        layoutItems.append(populationSizeSlider)
+        population_size_slider = makeSlider(1, 1000, self.populationSize)
+        population_size_slider.valueChanged.connect(self.set_population_size)
+        layout_items.append(population_size_slider)
 
-        # Paretns
+        # Parents
         self.numberOfParentsLabel = QLabel(f'Ilość rodziców {self.numberOfParents}')
-        layoutItems.append(self.numberOfParentsLabel)
+        layout_items.append(self.numberOfParentsLabel)
 
-        numOfParentsSlider = QSlider(Qt.Horizontal)
-        numOfParentsSlider.setMinimum(1)
-        numOfParentsSlider.setMaximum(100)
-        numOfParentsSlider.setValue(self.numberOfParents)
-        numOfParentsSlider.valueChanged.connect(self.set_number_of_parents)
-        layoutItems.append(numOfParentsSlider)
+        num_of_parents_slider = makeSlider(1, 100, self.numberOfParents)
+        num_of_parents_slider.valueChanged.connect(self.set_number_of_parents)
+        layout_items.append(num_of_parents_slider)
 
-        # Hromosome
-        self.numberOfHromosomeLabel = QLabel(f'Długość hromosomu {self.numberOfHromosome}')
-        layoutItems.append(self.numberOfHromosomeLabel)
+        # Chromosome
+        self.numberOfChromosomeLabel = QLabel(f'Długość hromosomu {self.numberOfChromosome}')
+        layout_items.append(self.numberOfChromosomeLabel)
 
-        numOfHromosomeSlider = QSlider(Qt.Horizontal)
-        numOfHromosomeSlider.setMinimum(1)
-        numOfHromosomeSlider.setMaximum(64)
-        numOfHromosomeSlider.setValue(self.numberOfHromosome)
-        numOfHromosomeSlider.valueChanged.connect(self.set_number_of_hromosome)
-        layoutItems.append(numOfHromosomeSlider)
-
+        num_of_chromosome_slider = makeSlider(1, 64, self.numberOfChromosome)
+        num_of_chromosome_slider.valueChanged.connect(self.set_number_of_hromosome)
+        layout_items.append(num_of_chromosome_slider)
 
         # Epoch
         self.numberOfEpochLabel = QLabel(f'Ilość epok {self.numberOfEpoch}')
-        layoutItems.append(self.numberOfEpochLabel)
+        layout_items.append(self.numberOfEpochLabel)
 
-        numOfEpochSlider = QSlider(Qt.Horizontal)
-        numOfEpochSlider.setMinimum(1)
-        numOfEpochSlider.setMaximum(1000)
-        numOfEpochSlider.setValue(self.numberOfEpoch)
-        numOfEpochSlider.valueChanged.connect(self.set_number_of_epoch)
-        layoutItems.append(numOfEpochSlider)
+        num_of_epoch_slider = makeSlider(1, 1000, self.numberOfEpoch)
+        num_of_epoch_slider.valueChanged.connect(self.set_number_of_epoch)
+        layout_items.append(num_of_epoch_slider)
 
-        self.crossingProbLabel = QLabel(f'Prawdopodobieństwo krzyżowania {self.corssingProb}')
-        layoutItems.append(self.crossingProbLabel)
+        self.crossingProbLabel = QLabel(f'Prawdopodobieństwo krzyżowania {self.crossingProb}')
+        layout_items.append(self.crossingProbLabel)
 
-        corssingProbSlider = QSlider(Qt.Horizontal)
-        corssingProbSlider.setMinimum(1)
-        corssingProbSlider.setMaximum(1000)
-        corssingProbSlider.setValue(self.corssingProb*1000)
-        corssingProbSlider.valueChanged.connect(self.set_corossing_prob)
-        layoutItems.append(corssingProbSlider)
+        crossing_prob_slider = makeSlider(1, 1000, self.crossingProb * 1000)
+        crossing_prob_slider.valueChanged.connect(self.set_corossing_prob)
+        layout_items.append(crossing_prob_slider)
 
+        # Selection
+        selection_method_label = QLabel('Wybierz metode selekcji')
+        layout_items.append(selection_method_label)
 
-        # Metoda Selekcji
-        selectinMetchodLabel = QLabel('Wybierz metode selekcji')
-        layoutItems.append(selectinMetchodLabel)
-        selectionMetchodGroup = QButtonGroup(self)
+        selection_combo_box = QComboBox(self)
+        selection_combo_box.addItems(SelectionMechods.ALL_OPTIONS_STRING.value)
 
-        rMs1 = QRadioButton("Najlepszych", self)
-        rMs2 = QRadioButton("Koło ruletki", self)
-        rMs3 = QRadioButton("Selekcja turniejowa", self)
-        rMs1.setChecked(True)
-        selectionMetchodGroup.addButton(rMs1)
-        selectionMetchodGroup.addButton(rMs2)
-        selectionMetchodGroup.addButton(rMs3)
+        selection_combo_box.currentIndexChanged.connect(self.set_selection_method)
+        layout_items.append(selection_combo_box)
 
-        selectionMetchodGroup.buttonClicked.connect(self.set_selection_method)
+        # Crossing
+        selection_method_label = QLabel('Wybierz forme krzyżowania')
+        layout_items.append(selection_method_label)
 
-        layoutItems.append(rMs1)
-        layoutItems.append(rMs2)
-        layoutItems.append(rMs3)
+        crossing_combo_box = QComboBox(self)
 
+        crossing_combo_box.addItems(CrossingMechods.ALL_OPTIONS_STRING.value)
 
-        # Krzyżowanie
-        selectinMetchodLabel = QLabel('Wybierz forme krzyżowania')
-        layoutItems.append(selectinMetchodLabel)
-        crossingGroup = QButtonGroup(self)
+        crossing_combo_box.currentIndexChanged.connect(self.set_crossing_method)
+        layout_items.append(crossing_combo_box)
 
-        rK1 = QRadioButton("Krzyżowanie 1 punktowe", self)
-        rK2 = QRadioButton("Krzyżowanie 2 punktowe", self)
-        rK3 = QRadioButton("Krzyżowanie 3 punktowe", self)
-        rK4 = QRadioButton("Krzyżowanie jednorodne", self)
-        rK5 = QRadioButton("Krzyżowanie ziarniste", self)
-        rK6 = QRadioButton("Krzyżowanie skanujące", self)
-        rK7 = QRadioButton("Krzyżowanie częściowe", self)
-        rK8 = QRadioButton("Krzyżowanie wielowymiarowe", self)
-        rK1.setChecked(True)
-        crossingGroup.addButton(rK1)
-        crossingGroup.addButton(rK2)
-        crossingGroup.addButton(rK3)
-        crossingGroup.addButton(rK4)
-        crossingGroup.addButton(rK5)
-        crossingGroup.addButton(rK6)
-        crossingGroup.addButton(rK7)
-        crossingGroup.addButton(rK8)
+        # Mutations
+        mutation_label = QLabel('Wybierz forme mutacji')
+        layout_items.append(mutation_label)
 
-        crossingGroup.buttonClicked.connect(self.set_crossing_method)
+        mutation_combo_box = QComboBox(self)
 
-        layoutItems.append(rK1)
-        layoutItems.append(rK2)
-        layoutItems.append(rK3)
-        layoutItems.append(rK4)
-        layoutItems.append(rK5)
-        layoutItems.append(rK6)
-        layoutItems.append(rK7)
-        layoutItems.append(rK8)
+        mutation_combo_box.addItems(MutationMechods.ALL_OPTIONS_STRING.value)
 
+        mutation_combo_box.currentIndexChanged.connect(self.set_mutation_method)
+        layout_items.append(mutation_combo_box)
 
-        
-
-
-        # Mutacje
-        mutationLabel = QLabel('Wybierz forme mutacji')
-        layoutItems.append(mutationLabel)
-        mutationGroup = QButtonGroup(self)
-
-        rMut1 = QRadioButton("Brzegowa", self)
-        rMut2 = QRadioButton("1 punktowa", self)
-        rMut3 = QRadioButton("2 punktowa", self)
-        rMut1.setChecked(True)
-        mutationGroup.addButton(rMut1)
-        mutationGroup.addButton(rMut2)
-        mutationGroup.addButton(rMut3)
-
-        mutationGroup.buttonClicked.connect(self.set_mutation_method)
-
-        layoutItems.append(rMut1)
-        layoutItems.append(rMut2)
-        layoutItems.append(rMut3)
         self.mutationLabel = QLabel(f'Prawdopodobieństwo mutacji {self.mutationProb}')
-        layoutItems.append(self.mutationLabel)
+        layout_items.append(self.mutationLabel)
 
-        mutationSlider = QSlider(Qt.Horizontal)
-        mutationSlider.setMinimum(1)
-        mutationSlider.setMaximum(1000)
-        mutationSlider.setValue(self.mutationProb*1000)
-        mutationSlider.valueChanged.connect(self.set_mutation_prob)
-        layoutItems.append(mutationSlider)
+        mutation_slider = makeSlider(1, 1000, self.mutationProb * 1000)
+        mutation_slider.valueChanged.connect(self.set_mutation_prob)
+        layout_items.append(mutation_slider)
 
         layout = QVBoxLayout()
 
-        for item in layoutItems:
+        for item in layout_items:
             layout.addWidget(item)
 
         self.setLayout(layout)
@@ -275,4 +206,3 @@ if __name__ == '__main__':
     window = MainWindow()
     window.show()
     app.exec()
-
