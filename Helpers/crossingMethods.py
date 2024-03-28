@@ -55,7 +55,7 @@ class GrainCrossover(CrossoverMethod):
                 child.append(gene1)
             else:
                 child.append(gene2)
-        return child
+        return [child]
 
 class ScanningCrossover(CrossoverMethod):
     def __init__(self, num_parents):
@@ -65,12 +65,11 @@ class ScanningCrossover(CrossoverMethod):
         parents = random.sample(population, self.numberOfParents)
         chromosome_length = len(parents[0])
         child = [None] * chromosome_length
-        
         for j in range(chromosome_length):
             chosen_parent_index = random.randint(0, self.numberOfParents - 1)
             child[j] = parents[chosen_parent_index][j]
 
-        return child
+        return [child]
 
 class PartialCopyCrossover(CrossoverMethod):
     def crossover(self, population):
@@ -86,8 +85,6 @@ class MultivariateCrossover(CrossoverMethod):
     def __init__(self, probability, q):
         self.corssingProb = probability
         self.q = q
-
-
     def crossover(self, population):
         #TODO: implementacja
         parent1_total, parent2_total = random.sample(population, 2)
@@ -101,12 +98,11 @@ class MultivariateCrossover(CrossoverMethod):
             rnd = random.random()
             if rnd <= self.corssingProb:
                 crossover_point = random.randint(0, len(parent1[i]) - 1)
-                child1.append((parent1[i][:crossover_point] + parent2[i][crossover_point:]))
-                child2.append((parent2[i][:crossover_point] + parent1[i][crossover_point:]))
+                child1 += (parent1[i][:crossover_point] + parent2[i][crossover_point:])
+                child2 += (parent2[i][:crossover_point] + parent1[i][crossover_point:])
             else:
             # Jeśli krzyżowanie nie jest wykonane, potomstwo to kopie rodziców
-                child1.append(parent1[i])
-                child2.append(parent2[i])
-
+                child1 += parent1[i]
+                child2 += parent2[i]
         return child1, child2
     

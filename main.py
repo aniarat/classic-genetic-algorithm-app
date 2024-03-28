@@ -3,7 +3,7 @@ from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods
 from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox
 
 from Helpers.layout import makeSlider
-from Helpers.lern import lern
+from Helpers.lern import learn
 from Helpers.mutationMethods import test_mutation
 
 from Helpers.selectionMethods import BestSelection, RouletteWheelSelection, TournamentSelection
@@ -12,7 +12,7 @@ from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, Thr
 
 
 def f(x):
-    return x ** 2 - 4 * x + 3
+    return (x ** 3 / 5) - x ** 2 - 15 * x + x ** 4
 
 
 class MainWindow(QWidget):
@@ -27,26 +27,34 @@ class MainWindow(QWidget):
     crossing_method = SinglePointCrossover().crossover
 
     def start_calc(self):
-        lern(number_of_epoch=self.numberOfEpoch,
-             size_of_population=self.populationSize,
-             chromosome_length=self.numberOfChromosome,
-             number_of_parents=self.numberOfParents,
-             crossing_function=self.crossing_method,
-             mutation_function=test_mutation,
-             selection_function=self.selection_method,
-             F=f)
+        self.resLabel.setText(f'Wyniki {learn(number_of_epoch=self.numberOfEpoch,
+                                              size_of_population=self.populationSize,
+                                              chromosome_length=self.numberOfChromosome,
+                                              number_of_parents=self.numberOfParents,
+                                              crossing_function=self.crossing_method,
+                                              mutation_function=test_mutation,
+                                              selection_function=self.selection_method,
+                                              crossing_probability=self.crossingProb,
+                                              F=f)}')
 
     def set_selection_method(self, option: int):
+        self.selection_options_label.hide()
+        self.selection_options_slider.hide()
         match option:
             case SelectionMechods.BEST.value:
                 self.selection_method = BestSelection().select
             case SelectionMechods.ROULETTE.value:
                 self.selection_method = RouletteWheelSelection().select
             case SelectionMechods.TOURNAMENT.value:
-                tournament_size = 3
-                self.selection_method = TournamentSelection(tournament_size).select
+                self.selection_options_label.setText(f'Wielkość tunrieju {self.selection_options_slider.value()}')
+                self.selection_options_label.show()
+                self.selection_options_slider.valueChanged.connect(self.set_turnament_size)
+                self.selection_options_slider.show()
+                self.selection_method = TournamentSelection(self.selection_options_slider.value()).select
 
     def set_crossing_method(self, option: int):
+        self.crossing_options_label.hide()
+        self.crossing_options_slider.hide()
         match option:
             case CrossingMechods.SINGLE_POINT.value:
                 self.crossing_method = SinglePointCrossover().crossover
@@ -65,9 +73,12 @@ class MainWindow(QWidget):
             case CrossingMechods.PARTIAL.value:
                 self.crossing_method = PartialCopyCrossover().crossover
             case CrossingMechods.MULTIVARIATE.value:
-                probability = self.crossingProb
-                q = 3
-                self.crossing_method = MultivariateCrossover(probability, q).crossover
+                self.crossing_options_label.setText(f'q {self.crossing_options_slider.value()}')
+                self.crossing_options_label.show()
+                self.crossing_options_slider.valueChanged.connect(self.set_q)
+                self.crossing_options_slider.show()
+                self.crossing_method = MultivariateCrossover(self.crossingProb,
+                                                             self.crossing_options_slider.value()).crossover
 
     def set_mutation_method(self, option: int):
         # TODO: Dodać implementacje
@@ -103,10 +114,16 @@ class MainWindow(QWidget):
         self.mutationProb = val / 1000
         self.mutationLabel.setText(f'Prawdopodobieństwo mutacji {self.mutationProb}')
 
+    def set_q(self, val):
+        self.crossing_options_label.setText(f'q {val}')
+        self.crossing_method = MultivariateCrossover(self.crossingProb, val).crossover
+
+    def set_turnament_size(self, val):
+        self.selection_options_label.setText(f'Wielkość tunrieju {val}')
+        self.selection_method = TournamentSelection(val).select
+
     def __init__(self):
         super().__init__()
-        self.selection_function = None
-        self.crossing_function = None
 
         self.setWindowTitle("OE Proj 2. Wieczorek, Piwko, Ratowska")
         layout_items = []
@@ -163,6 +180,13 @@ class MainWindow(QWidget):
         selection_combo_box.currentIndexChanged.connect(self.set_selection_method)
         layout_items.append(selection_combo_box)
 
+        self.selection_options_label = QLabel('')
+        self.selection_options_label.hide()
+        layout_items.append(self.selection_options_label)
+        self.selection_options_slider = makeSlider(1, 10, 1)
+        self.selection_options_slider.hide()
+        layout_items.append(self.selection_options_slider)
+
         # Crossing
         selection_method_label = QLabel('Wybierz forme krzyżowania')
         layout_items.append(selection_method_label)
@@ -173,6 +197,13 @@ class MainWindow(QWidget):
 
         crossing_combo_box.currentIndexChanged.connect(self.set_crossing_method)
         layout_items.append(crossing_combo_box)
+
+        self.crossing_options_label = QLabel('')
+        self.crossing_options_label.hide()
+        layout_items.append(self.crossing_options_label)
+        self.crossing_options_slider = makeSlider(1, 10, 1)
+        self.crossing_options_slider.hide()
+        layout_items.append(self.crossing_options_slider)
 
         # Mutations
         mutation_label = QLabel('Wybierz forme mutacji')
@@ -191,6 +222,10 @@ class MainWindow(QWidget):
         mutation_slider = makeSlider(1, 1000, self.mutationProb * 1000)
         mutation_slider.valueChanged.connect(self.set_mutation_prob)
         layout_items.append(mutation_slider)
+
+        # retrun of learn
+        self.resLabel = QLabel('Wyniki:')
+        layout_items.append(self.resLabel)
 
         layout = QVBoxLayout()
 
