@@ -89,7 +89,6 @@ class MainWindow(QWidget):
                 print(button.text())
             case "2 punktowa":
                 print(button.text())
-# Test
 
     def set_population_size(self, val):
         self.populationSize = val
