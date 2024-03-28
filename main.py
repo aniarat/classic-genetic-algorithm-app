@@ -2,6 +2,7 @@ import sys
 from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods
 from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox
 
+from Helpers.functions import rastrigin
 from Helpers.layout import makeSlider
 from Helpers.lern import learn
 from Helpers.mutationMethods import test_mutation
@@ -17,7 +18,7 @@ def f(x):
 
 class MainWindow(QWidget):
     populationSize = 40
-    numberOfParents = 10
+    numberOfParents = 30
     numberOfChromosome = 24
     numberOfEpoch = 100
     crossingProb = 0.1
@@ -35,7 +36,7 @@ class MainWindow(QWidget):
                                               mutation_function=test_mutation,
                                               selection_function=self.selection_method,
                                               crossing_probability=self.crossingProb,
-                                              F=f)}')
+                                              F=rastrigin)}')
 
     def set_selection_method(self, option: int):
         self.selection_options_label.hide()
@@ -135,7 +136,7 @@ class MainWindow(QWidget):
         self.populationSizeLabel = QLabel(f'Wielkość populacji {self.populationSize}')
         layout_items.append(self.populationSizeLabel)
 
-        population_size_slider = makeSlider(1, 1000, self.populationSize)
+        population_size_slider = makeSlider(10, 1000, self.populationSize)
         population_size_slider.valueChanged.connect(self.set_population_size)
         layout_items.append(population_size_slider)
 
@@ -143,7 +144,7 @@ class MainWindow(QWidget):
         self.numberOfParentsLabel = QLabel(f'Ilość rodziców {self.numberOfParents}')
         layout_items.append(self.numberOfParentsLabel)
 
-        num_of_parents_slider = makeSlider(1, 100, self.numberOfParents)
+        num_of_parents_slider = makeSlider(10, 1000, self.numberOfParents)
         num_of_parents_slider.valueChanged.connect(self.set_number_of_parents)
         layout_items.append(num_of_parents_slider)
 
@@ -159,7 +160,7 @@ class MainWindow(QWidget):
         self.numberOfEpochLabel = QLabel(f'Ilość epok {self.numberOfEpoch}')
         layout_items.append(self.numberOfEpochLabel)
 
-        num_of_epoch_slider = makeSlider(1, 1000, self.numberOfEpoch)
+        num_of_epoch_slider = makeSlider(1, 10_000, self.numberOfEpoch)
         num_of_epoch_slider.valueChanged.connect(self.set_number_of_epoch)
         layout_items.append(num_of_epoch_slider)
 

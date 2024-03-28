@@ -17,9 +17,9 @@ class BestSelection(SelectionMethod):
 class RouletteWheelSelection(SelectionMethod):
     def select(self, population, fitness_values, num_parents):
         total_fitness = sum(fitness_values)
-        normalized_fitness = [total_fitness / f for f in fitness_values]
+        normalized_fitness = [f / total_fitness for f in fitness_values]
         relative_fitness = [f / sum(normalized_fitness) for f in normalized_fitness]
-        cumulative_probability = [sum(relative_fitness[:i+1]) for i in range(len(relative_fitness)) for i in range(len(relative_fitness))]
+        cumulative_probability = [sum(relative_fitness[:i+1]) for i in range(len(relative_fitness))]
         selected_parents = []
         for _ in range(num_parents):
             rand = random.random()
