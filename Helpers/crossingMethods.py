@@ -95,6 +95,32 @@ class PartialCopyCrossover(CrossoverMethod):
         return child1, child2
     
 class MultivariateCrossover(CrossoverMethod):
-    def crossover(self, population, pc, q):
+    def __init__(self, probability, q):
+        self.corssingProb = probability
+        self.q = q
+
+
+    def crossover(self, population):
         #TODO: implementacja
-        return 
+        parent1_total, parent2_total = random.sample(population, 2)
+        parent1 = [parent1_total[i : i + len(parent1_total)//self.q] for i in range(0, len(parent1_total), len(parent1_total)//self.q)]
+        parent2 = [parent2_total[i : i + len(parent2_total)//self.q] for i in range(0, len(parent2_total), len(parent2_total)//self.q)]
+
+        child1 = [] 
+        child2 = []
+
+        for i in range(self.q):
+            rnd = random.random()
+            if rnd <= self.corssingProb:
+                crossover_point = random.randint(0, len(parent1[i]) - 1)
+                child1.append((parent1[i][:crossover_point].tolist() + parent2[i][crossover_point:]).tolist())
+                child2.append((parent2[i][:crossover_point].tolist() + parent1[i][crossover_point:]).tolist())
+            else:
+            # Jeśli krzyżowanie nie jest wykonane, potomstwo to kopie rodziców
+                child1.append(parent1[i].tolist())
+                child2.append(parent2[i].tolist())
+
+        print(child1)
+        print(child2)
+        return child1, child2
+    

@@ -12,7 +12,7 @@ from Helpers.mutationMethods import test_mutation
 from Helpers.parents import initParents, printParents
 
 from Helpers.selectionMethods import BestSelection, RouletteWheelSelection, TournamentSelection
-from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, ThreePointCrossover, UniformCrossover, GrainCrossover, ScanningCrossover, PartialCopyCrossover
+from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, ThreePointCrossover, UniformCrossover, GrainCrossover, ScanningCrossover, PartialCopyCrossover, MultivariateCrossover
 
 
 def f(x):
@@ -29,20 +29,19 @@ class MainWindow(QWidget):
 
     def start_calc(self):
         lern(number_of_epoch = self.numberOfEpoch,
-             size_of_population = self.populationSize,
-         chromsome_length = self.numberOfHromosome,
-         number_of_parents = self.numberOfParents,
-         crossing_function = self.crossing_function,
-         mutation_function = test_mutation,
-         selection_function=self.selection_function,
-         F = f)
+            size_of_population = self.populationSize,
+            chromsome_length = self.numberOfHromosome,
+            number_of_parents = self.numberOfParents,
+            crossing_function = self.crossing_function,
+            mutation_function = test_mutation,
+            selection_function=self.selection_function,
+            F = f)
         
     def set_selection_method(self, button: QRadioButton):
         population = [np.random.randint(0, 2, self.numberOfHromosome) for _ in range(self.populationSize)]
      
         fitness_values = [f(binary_to_decimal(individual)) for individual in population]
-        #print(fitness_values)
-        #TODO: Dodać implementacje
+     
         match button.text():
             case "Najlepszych":
                 selection_method = BestSelection()
@@ -54,11 +53,9 @@ class MainWindow(QWidget):
 
         self.selection_function = selection_method.select(population, fitness_values, self.numberOfParents)
         
-       
-
     def set_crossing_method(self, button: QRadioButton):
         selected_population = self.selection_function
-        #TODO: Dodać implementacje
+
         match button.text():
             case "Krzyżowanie 1 punktowe":
                 crossing_method = SinglePointCrossover()
@@ -77,7 +74,9 @@ class MainWindow(QWidget):
             case "Krzyżowanie częściowe":
                 crossing_method = PartialCopyCrossover()
             case "Krzyżowanie wielowymiarowe":
-                print("Wielowymiarowe")
+                probability = self.corssingProb
+                q = 3
+                crossing_method = MultivariateCrossover(probability, q)
 
         self.crossing_function = crossing_method.crossover(selected_population)
 
@@ -90,7 +89,6 @@ class MainWindow(QWidget):
                 print(button.text())
             case "2 punktowa":
                 print(button.text())
-
 
 
     def set_population_size(self, val):
