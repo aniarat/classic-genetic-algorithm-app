@@ -12,10 +12,6 @@ from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, Thr
     GrainCrossover, ScanningCrossover, PartialCopyCrossover, MultivariateCrossover
 
 
-def f(x):
-    return (x ** 3 / 5) - x ** 2 - 15 * x + x ** 4
-
-
 class MainWindow(QWidget):
     populationSize = 40
     numberOfParents = 30
@@ -23,6 +19,9 @@ class MainWindow(QWidget):
     numberOfEpoch = 100
     crossingProb = 0.1
     mutationProb = 0.1
+
+    selectionName = SelectionMechods.BEST_STRING.value
+    crossingName = CrossingMechods.SINGLE_POINT_STRING.value
 
     selection_method = BestSelection().select
     crossing_method = SinglePointCrossover().crossover
@@ -36,7 +35,8 @@ class MainWindow(QWidget):
                                               mutation_function=test_mutation,
                                               selection_function=self.selection_method,
                                               crossing_probability=self.crossingProb,
-                                              F=rastrigin)}')
+                                              func=rastrigin,
+                                              title=f'{self.selectionName} - {self.crossingName}')}')
 
     def set_selection_method(self, option: int):
         self.selection_options_label.hide()
@@ -44,14 +44,17 @@ class MainWindow(QWidget):
         match option:
             case SelectionMechods.BEST.value:
                 self.selection_method = BestSelection().select
+                self.selectionName = SelectionMechods.BEST_STRING.value
             case SelectionMechods.ROULETTE.value:
                 self.selection_method = RouletteWheelSelection().select
+                self.selectionName = SelectionMechods.ROULETTE_STRING.value
             case SelectionMechods.TOURNAMENT.value:
                 self.selection_options_label.setText(f'Wielkość tunrieju {self.selection_options_slider.value()}')
                 self.selection_options_label.show()
                 self.selection_options_slider.valueChanged.connect(self.set_turnament_size)
                 self.selection_options_slider.show()
                 self.selection_method = TournamentSelection(self.selection_options_slider.value()).select
+                self.selectionName = SelectionMechods.TOURNAMENT_STRING.value
 
     def set_crossing_method(self, option: int):
         self.crossing_options_label.hide()
@@ -59,21 +62,29 @@ class MainWindow(QWidget):
         match option:
             case CrossingMechods.SINGLE_POINT.value:
                 self.crossing_method = SinglePointCrossover().crossover
+                self.crossingName = CrossingMechods.SINGLE_POINT_STRING_STRING.value
             case CrossingMechods.DOUBLE_POINT.value:
+                self.crossingName = CrossingMechods.DOUBLE_POINT_STRING.value
                 self.crossing_method = TwoPointCrossover().crossover
             case CrossingMechods.TRIPLE_POINT.value:
+                self.crossingName = CrossingMechods.TRIPLE_POINT_STRING.value
                 self.crossing_method = ThreePointCrossover().crossover
             case CrossingMechods.UNIFORM.value:
+                self.crossingName = CrossingMechods.UNIFORM_STRING.value
                 probability = self.crossingProb
                 self.crossing_method = UniformCrossover(probability).crossover
             case CrossingMechods.GRAIN.value:
+                self.crossingName = CrossingMechods.GRAIN_STRING.value
                 self.crossing_method = GrainCrossover().crossover
             case CrossingMechods.SCANNING.value:
+                self.crossingName = CrossingMechods.SCANNING_STRING.value
                 num_parents = self.numberOfParents
                 self.crossing_method = ScanningCrossover(num_parents).crossover
             case CrossingMechods.PARTIAL.value:
+                self.crossingName = CrossingMechods.PARTIAL_STRING.value
                 self.crossing_method = PartialCopyCrossover().crossover
             case CrossingMechods.MULTIVARIATE.value:
+                self.crossingName = CrossingMechods.MULTIVARIATE_STRING.value
                 self.crossing_options_label.setText(f'q {self.crossing_options_slider.value()}')
                 self.crossing_options_label.show()
                 self.crossing_options_slider.valueChanged.connect(self.set_q)
