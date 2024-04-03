@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, Q
 
 from Helpers.functions import rastrigin
 from Helpers.layout import makeSlider
-from Helpers.lern import learn
+from Helpers.lern import Model
 from Helpers.mutationMethods import test_mutation
 
 from Helpers.selectionMethods import BestSelection, RouletteWheelSelection, TournamentSelection
@@ -19,41 +19,51 @@ class MainWindow(QWidget):
     numberOfEpoch = 100
     crossingProb = 0.1
     mutationProb = 0.1
+    numberOfDimensions = 2
 
     selectionName = SelectionMechods.BEST_STRING.value
     crossingName = CrossingMechods.SINGLE_POINT_STRING.value
 
-    selection_method = BestSelection().select
-    crossing_method = SinglePointCrossover().crossover
+    selection_method = BestSelection(2).select
+    crossing_method = SinglePointCrossover(2).crossover
 
     def start_calc(self):
-        self.resLabel.setText(f'Wyniki {learn(number_of_epoch=self.numberOfEpoch,
-                                              size_of_population=self.populationSize,
-                                              chromosome_length=self.numberOfChromosome,
-                                              number_of_parents=self.numberOfParents,
-                                              crossing_function=self.crossing_method,
-                                              mutation_function=test_mutation,
-                                              selection_function=self.selection_method,
-                                              crossing_probability=self.crossingProb,
-                                              func=rastrigin,
-                                              title=f'{self.selectionName} - {self.crossingName}')}')
+        local_model = Model(number_of_epoch=self.numberOfEpoch,
+                            size_of_population=self.populationSize,
+                            chromosome_length=self.numberOfChromosome,
+                            number_of_parents=self.numberOfParents,
+                            crossing_function=self.crossing_method,
+                            mutation_function=test_mutation,
+                            selection_function=self.selection_method,
+                            crossing_probability=self.crossingProb,
+                            mutation_prob=self.mutationProb,
+                            number_of_dimensions=self.numberOfDimensions,
+                            func=rastrigin,
+                            title=f'{self.selectionName} - {self.crossingName}')
+        final_string = ''
+        final_string += local_model.getStartString()
+        local_model.fitness()
+        final_string += local_model.getEndString()
+        local_model.getChats()
+        self.resLabel.setText(f'Wyniki {final_string}')
 
     def set_selection_method(self, option: int):
         self.selection_options_label.hide()
         self.selection_options_slider.hide()
         match option:
             case SelectionMechods.BEST.value:
-                self.selection_method = BestSelection().select
+                self.selection_method = BestSelection(self.numberOfDimensions).select
                 self.selectionName = SelectionMechods.BEST_STRING.value
             case SelectionMechods.ROULETTE.value:
-                self.selection_method = RouletteWheelSelection().select
+                self.selection_method = RouletteWheelSelection(self.numberOfDimensions).select
                 self.selectionName = SelectionMechods.ROULETTE_STRING.value
             case SelectionMechods.TOURNAMENT.value:
                 self.selection_options_label.setText(f'Wielkość tunrieju {self.selection_options_slider.value()}')
                 self.selection_options_label.show()
                 self.selection_options_slider.valueChanged.connect(self.set_turnament_size)
                 self.selection_options_slider.show()
-                self.selection_method = TournamentSelection(self.selection_options_slider.value()).select
+                self.selection_method = TournamentSelection(self.selection_options_slider.value(),
+                                                            self.numberOfDimensions).select
                 self.selectionName = SelectionMechods.TOURNAMENT_STRING.value
 
     def set_crossing_method(self, option: int):
@@ -61,28 +71,28 @@ class MainWindow(QWidget):
         self.crossing_options_slider.hide()
         match option:
             case CrossingMechods.SINGLE_POINT.value:
-                self.crossing_method = SinglePointCrossover().crossover
+                self.crossing_method = SinglePointCrossover(self.numberOfDimensions).crossover
                 self.crossingName = CrossingMechods.SINGLE_POINT_STRING_STRING.value
             case CrossingMechods.DOUBLE_POINT.value:
                 self.crossingName = CrossingMechods.DOUBLE_POINT_STRING.value
-                self.crossing_method = TwoPointCrossover().crossover
+                self.crossing_method = TwoPointCrossover(self.numberOfDimensions).crossover
             case CrossingMechods.TRIPLE_POINT.value:
                 self.crossingName = CrossingMechods.TRIPLE_POINT_STRING.value
-                self.crossing_method = ThreePointCrossover().crossover
+                self.crossing_method = ThreePointCrossover(self.numberOfDimensions).crossover
             case CrossingMechods.UNIFORM.value:
                 self.crossingName = CrossingMechods.UNIFORM_STRING.value
                 probability = self.crossingProb
-                self.crossing_method = UniformCrossover(probability).crossover
+                self.crossing_method = UniformCrossover(probability, self.numberOfDimensions).crossover
             case CrossingMechods.GRAIN.value:
                 self.crossingName = CrossingMechods.GRAIN_STRING.value
-                self.crossing_method = GrainCrossover().crossover
+                self.crossing_method = GrainCrossover(self.numberOfDimensions).crossover
             case CrossingMechods.SCANNING.value:
                 self.crossingName = CrossingMechods.SCANNING_STRING.value
                 num_parents = self.numberOfParents
-                self.crossing_method = ScanningCrossover(num_parents).crossover
+                self.crossing_method = ScanningCrossover(num_parents, self.numberOfDimensions).crossover
             case CrossingMechods.PARTIAL.value:
                 self.crossingName = CrossingMechods.PARTIAL_STRING.value
-                self.crossing_method = PartialCopyCrossover().crossover
+                self.crossing_method = PartialCopyCrossover(self.numberOfDimensions).crossover
             case CrossingMechods.MULTIVARIATE.value:
                 self.crossingName = CrossingMechods.MULTIVARIATE_STRING.value
                 self.crossing_options_label.setText(f'q {self.crossing_options_slider.value()}')
@@ -90,7 +100,7 @@ class MainWindow(QWidget):
                 self.crossing_options_slider.valueChanged.connect(self.set_q)
                 self.crossing_options_slider.show()
                 self.crossing_method = MultivariateCrossover(self.crossingProb,
-                                                             self.crossing_options_slider.value()).crossover
+                                                             self.crossing_options_slider.value(), self.numberOfDimensions).crossover
 
     def set_mutation_method(self, option: int):
         # TODO: Dodać implementacje
@@ -108,11 +118,11 @@ class MainWindow(QWidget):
 
     def set_number_of_parents(self, val):
         self.numberOfParents = val
-        self.numberOfParentsLabel.setText(f'Ilość rodziców {self.numberOfParents}')
+        self.numberOfParentsLabel.setText(f'Liczba osobników selekcji {self.numberOfParents}')
 
     def set_number_of_epoch(self, val):
         self.numberOfEpoch = val
-        self.numberOfEpochLabel.setText(f'Ilość epok {self.numberOfEpoch}')
+        self.numberOfEpochLabel.setText(f'Liczba epok {self.numberOfEpoch}')
 
     def set_number_of_hromosome(self, val):
         self.numberOfChromosome = val
@@ -128,11 +138,11 @@ class MainWindow(QWidget):
 
     def set_q(self, val):
         self.crossing_options_label.setText(f'q {val}')
-        self.crossing_method = MultivariateCrossover(self.crossingProb, val).crossover
+        self.crossing_method = MultivariateCrossover(self.crossingProb, val, self.numberOfDimensions).crossover
 
     def set_turnament_size(self, val):
         self.selection_options_label.setText(f'Wielkość tunrieju {val}')
-        self.selection_method = TournamentSelection(val).select
+        self.selection_method = TournamentSelection(val, self.numberOfDimensions).select
 
     def __init__(self):
         super().__init__()
@@ -152,7 +162,7 @@ class MainWindow(QWidget):
         layout_items.append(population_size_slider)
 
         # Parents
-        self.numberOfParentsLabel = QLabel(f'Ilość rodziców {self.numberOfParents}')
+        self.numberOfParentsLabel = QLabel(f'Liczba osobników selekcji {self.numberOfParents}')
         layout_items.append(self.numberOfParentsLabel)
 
         num_of_parents_slider = makeSlider(10, 1000, self.numberOfParents)
@@ -168,7 +178,7 @@ class MainWindow(QWidget):
         layout_items.append(num_of_chromosome_slider)
 
         # Epoch
-        self.numberOfEpochLabel = QLabel(f'Ilość epok {self.numberOfEpoch}')
+        self.numberOfEpochLabel = QLabel(f'Liczba epok {self.numberOfEpoch}')
         layout_items.append(self.numberOfEpochLabel)
 
         num_of_epoch_slider = makeSlider(1, 10_000, self.numberOfEpoch)

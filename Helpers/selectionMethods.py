@@ -7,14 +7,23 @@ class SelectionMethod:
         pass
 
 class BestSelection(SelectionMethod):
-    def select(self, population, fitness_values, num_parents):
+    def __init__(self, number_of_dimensions):
+        self.number_of_dimensions = number_of_dimensions
+    def select(self, population, fitness_values, num_parents: int):
         combined_population = list(zip(population, fitness_values))
         sorted_population = sorted(combined_population, key=lambda x: x[1])
+        selected_parents = [individual[0] for individual in sorted_population[:num_parents]]
+        return selected_parents
+    def maxSelect(self, population, fitness_values, num_parents):
+        combined_population = list(zip(population, fitness_values))
+        sorted_population = sorted(combined_population, key=lambda x: x[1], reverse=True)
         selected_parents = [individual[0] for individual in sorted_population[:num_parents]]
         return selected_parents
 
 
 class RouletteWheelSelection(SelectionMethod):
+    def __init__(self, number_of_dimensions):
+        self.number_of_dimensions = number_of_dimensions
     def select(self, population, fitness_values, num_parents):
         total_fitness = sum(fitness_values)
         normalized_fitness = [f / total_fitness for f in fitness_values]
@@ -30,8 +39,9 @@ class RouletteWheelSelection(SelectionMethod):
         return selected_parents
 
 class TournamentSelection(SelectionMethod):
-    def __init__(self, tournament_size):
+    def __init__(self, tournament_size, number_of_dimensions):
         self.tournament_size = tournament_size
+        self.number_of_dimensions = number_of_dimensions
 
     def select(self, population, fitness_values, num_parents):
         selected_parents = []
@@ -40,6 +50,16 @@ class TournamentSelection(SelectionMethod):
             tournament_indices = random.sample(range(population_size), self.tournament_size)
             tournament_fitness_values = [fitness_values[i] for i in tournament_indices]
             winner_index = tournament_indices[tournament_fitness_values.index(min(tournament_fitness_values))]
+            winner = population[winner_index]
+            selected_parents.append(winner)
+        return selected_parents
+    def maxSelect(self, population, fitness_values, num_parents):
+        selected_parents = []
+        population_size = len(population)
+        while len(selected_parents) < num_parents:
+            tournament_indices = random.sample(range(population_size), self.tournament_size)
+            tournament_fitness_values = [fitness_values[i] for i in tournament_indices]
+            winner_index = tournament_indices[tournament_fitness_values.index(max(tournament_fitness_values))]
             winner = population[winner_index]
             selected_parents.append(winner)
         return selected_parents

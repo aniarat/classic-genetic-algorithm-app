@@ -5,6 +5,8 @@ class CrossoverMethod:
         pass
 
 class SinglePointCrossover(CrossoverMethod):
+    def __init__(self, number_of_dimensions):
+        self.number_of_dimensions = number_of_dimensions
     def crossover(self, population):
         parent1, parent2 = random.sample(population, 2)
         crossing_point = random.randint(1, min(len(parent1), len(parent2)) - 1)
@@ -13,6 +15,8 @@ class SinglePointCrossover(CrossoverMethod):
         return child1, child2
 
 class TwoPointCrossover(CrossoverMethod):
+    def __init__(self, number_of_dimensions):
+        self.number_of_dimensions = number_of_dimensions
     def crossover(self, population): 
         
         parent1, parent2 = random.sample(population, 2)
@@ -22,6 +26,8 @@ class TwoPointCrossover(CrossoverMethod):
         return child1, child2
 
 class ThreePointCrossover(CrossoverMethod):
+    def __init__(self, number_of_dimensions):
+        self.number_of_dimensions = number_of_dimensions
     def crossover(self, population):
         parent1, parent2 = random.sample(population, 2)
         crossover_points = sorted(random.sample(range(1, min(len(parent1), len(parent2))), 3))
@@ -30,8 +36,9 @@ class ThreePointCrossover(CrossoverMethod):
         return child1, child2
 
 class UniformCrossover(CrossoverMethod):
-    def __init__(self, probability):
+    def __init__(self, probability, number_of_dimensions):
         self.corssingProb = probability
+        self.number_of_dimensions = number_of_dimensions
 
     def crossover(self, population):
         parent1, parent2 = random.sample(population, 2)
@@ -47,6 +54,8 @@ class UniformCrossover(CrossoverMethod):
         return child1, child2
 
 class GrainCrossover(CrossoverMethod):
+    def __init__(self, number_of_dimensions):
+        self.number_of_dimensions = number_of_dimensions
     def crossover(self, population):
         parent1, parent2 = random.sample(population, 2)
         child = []
@@ -58,8 +67,9 @@ class GrainCrossover(CrossoverMethod):
         return [child]
 
 class ScanningCrossover(CrossoverMethod):
-    def __init__(self, num_parents):
+    def __init__(self, num_parents, number_of_dimensions):
         self.numberOfParents = num_parents
+        self.number_of_dimensions = number_of_dimensions
 
     def crossover(self, population):
         parents = random.sample(population, self.numberOfParents)
@@ -72,6 +82,8 @@ class ScanningCrossover(CrossoverMethod):
         return [child]
 
 class PartialCopyCrossover(CrossoverMethod):
+    def __init__(self, number_of_dimensions):
+        self.number_of_dimensions = number_of_dimensions
     def crossover(self, population):
         parent1, parent2 = random.sample(population, 2)
         chromosome_length = len(parent1)
@@ -82,9 +94,10 @@ class PartialCopyCrossover(CrossoverMethod):
         return child1, child2
     
 class MultivariateCrossover(CrossoverMethod):
-    def __init__(self, probability, q):
+    def __init__(self, probability, q, number_of_dimensions):
         self.corssingProb = probability
         self.q = q
+        self.number_of_dimensions = number_of_dimensions
     def crossover(self, population):
         #TODO: implementacja
         parent1_total, parent2_total = random.sample(population, 2)
