@@ -92,15 +92,16 @@ class Model:
             temp_population = self.selection_function(population,
                                                       all_res,
                                                       self.number_of_parents)
+            
             while len(temp_population) < self.size_of_population:
                 if random.random() >= self.crossing_probability:
                     temp_population += self.crossing_function(temp_population)
 
             # TODO: Uncomment after mutation function implementation
-            # for i in range(len(temp_population)):
-            #     for j in range(len(temp_population[i])):
-            #         if random.random() >= self.mutation_prob:
-            #             temp_population[i][j] = mutation_function(temp_population[i][j])
+            for i in range(len(temp_population)):
+                 for j in range(len(temp_population[i])):
+                     if random.random() >= self.mutation_prob:
+                         temp_population[i][j] = self.mutation_function(temp_population[i][j], self.mutation_prob)
             # TODO: Add combo that choose min or max of function
             temp_population.append(self.find_best_spec(self.func, population))
             population = temp_population

@@ -5,11 +5,12 @@ from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, Q
 from Helpers.functions import rastrigin
 from Helpers.layout import makeSlider
 from Helpers.lern import Model
-from Helpers.mutationMethods import test_mutation
 
 from Helpers.selectionMethods import BestSelection, RouletteWheelSelection, TournamentSelection
 from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, ThreePointCrossover, UniformCrossover, \
     GrainCrossover, ScanningCrossover, PartialCopyCrossover, MultivariateCrossover
+
+from Helpers.mutationMethods import EdgeMutation, SinglePointMutation, TwoPointMutation
 
 
 class MainWindow(QWidget):
@@ -23,9 +24,11 @@ class MainWindow(QWidget):
 
     selectionName = SelectionMechods.BEST_STRING.value
     crossingName = CrossingMechods.SINGLE_POINT_STRING.value
+    mutationName = MutationMechods.EDGE_STRING.value
 
     selection_method = BestSelection(2).select
     crossing_method = SinglePointCrossover(2).crossover
+    mutation_method = EdgeMutation(2).mutate
 
     def start_calc(self):
         local_model = Model(number_of_epoch=self.numberOfEpoch,
@@ -33,7 +36,7 @@ class MainWindow(QWidget):
                             chromosome_length=self.numberOfChromosome,
                             number_of_parents=self.numberOfParents,
                             crossing_function=self.crossing_method,
-                            mutation_function=test_mutation,
+                            mutation_function=self.mutation_method,
                             selection_function=self.selection_method,
                             crossing_probability=self.crossingProb,
                             mutation_prob=self.mutationProb,
@@ -103,14 +106,16 @@ class MainWindow(QWidget):
                                                              self.crossing_options_slider.value(), self.numberOfDimensions).crossover
 
     def set_mutation_method(self, option: int):
-        # TODO: Dodać implementacje
         match option:
             case MutationMechods.EDGE.value:
-                print(option)
+                self.mutationName = MutationMechods.EDGE_STRING.value
+                self.mutation_method = EdgeMutation(self.numberOfDimensions).mutate
             case MutationMechods.SINGLE_POINT.value:
-                print(option)
+                self.mutationName = MutationMechods.SINGLE_POINT_STRING.value
+                self.mutation_method = SinglePointMutation(self.numberOfDimensions).mutate
             case MutationMechods.DOUBLE_POINT.value:
-                print(option)
+                self.mutationName = MutationMechods.DOUBLE_POINT_STRING.value
+                self.mutation_method = TwoPointMutation(self.numberOfDimensions).mutate
 
     def set_population_size(self, val):
         self.populationSize = val

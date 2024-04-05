@@ -8,10 +8,14 @@ class SinglePointCrossover(CrossoverMethod):
     def __init__(self, number_of_dimensions):
         self.number_of_dimensions = number_of_dimensions
     def crossover(self, population):
+        #print(population)
         parent1, parent2 = random.sample(population, 2)
         crossing_point = random.randint(1, min(len(parent1), len(parent2)) - 1)
         child1 = parent1[:crossing_point] + parent2[crossing_point:]
         child2 = parent2[:crossing_point] + parent1[crossing_point:]
+        #print("Dziecko1: ", child1)
+        #print("Dziecko2: ", child2)
+
         return child1, child2
 
 class TwoPointCrossover(CrossoverMethod):
@@ -51,6 +55,7 @@ class UniformCrossover(CrossoverMethod):
             else:
                 child1.append(gene1)
                 child2.append(gene2)
+                
         return child1, child2
 
 class GrainCrossover(CrossoverMethod):

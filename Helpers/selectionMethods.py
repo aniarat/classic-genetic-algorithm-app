@@ -10,6 +10,7 @@ class BestSelection(SelectionMethod):
     def __init__(self, number_of_dimensions):
         self.number_of_dimensions = number_of_dimensions
     def select(self, population, fitness_values, num_parents: int):
+
         combined_population = list(zip(population, fitness_values))
         sorted_population = sorted(combined_population, key=lambda x: x[1])
         selected_parents = [individual[0] for individual in sorted_population[:num_parents]]
