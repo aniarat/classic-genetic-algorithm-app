@@ -18,9 +18,7 @@ class EdgeMutation(MutationMethod):
                 else:
                     if random.random() < 0.5:
                         mutated_individual[i] = 1 if mutated_individual[i] == 0 else 0
-                        
-        print(mutated_individual)
-        
+
         return mutated_individual
     
 class SinglePointMutation(MutationMethod):
@@ -39,7 +37,6 @@ class SinglePointMutation(MutationMethod):
                 # Zamieniamy wartość genu w osobniku na nową wartość
                 mutated_individual[i] = new_gene
 
-        print(mutated_individual)
         return mutated_individual
     
 class TwoPointMutation(MutationMethod):
@@ -61,12 +58,4 @@ class TwoPointMutation(MutationMethod):
                 new_gene = random.randint(0, 1)  # Zakładam, że geny są binarne (0 lub 1)
                 # Zamieniamy wartość genu w osobniku na nową wartość
                 mutated_individual[i] = new_gene
-
-        print(mutated_individual)
         return mutated_individual
-    
-
-#def test_mutation(specimen: list):
-    # r = random.randint(0,len(specimen)-1)
-    # specimen[r] *= -1
- #   return specimen
