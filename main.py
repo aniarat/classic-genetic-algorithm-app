@@ -131,7 +131,7 @@ class MainWindow(QWidget):
 
     def set_number_of_hromosome(self, val):
         self.numberOfChromosome = val
-        self.numberOfChromosomeLabel.setText(f'Długość hromosomu {self.numberOfChromosome}')
+        self.numberOfChromosomeLabel.setText(f'Długość chromosomu {self.numberOfChromosome}')
 
     def set_corossing_prob(self, val):
         self.crossingProb = val / 1000
@@ -146,7 +146,7 @@ class MainWindow(QWidget):
         self.crossing_method = MultivariateCrossover(self.crossingProb, val, self.numberOfDimensions).crossover
 
     def set_turnament_size(self, val):
-        self.selection_options_label.setText(f'Wielkość tunrieju {val}')
+        self.selection_options_label.setText(f'Wielkość turnieju {val}')
         self.selection_method = TournamentSelection(val, self.numberOfDimensions).select
 
     def __init__(self):
@@ -175,7 +175,7 @@ class MainWindow(QWidget):
         layout_items.append(num_of_parents_slider)
 
         # Chromosome
-        self.numberOfChromosomeLabel = QLabel(f'Długość hromosomu {self.numberOfChromosome}')
+        self.numberOfChromosomeLabel = QLabel(f'Długość chromosomu {self.numberOfChromosome}')
         layout_items.append(self.numberOfChromosomeLabel)
 
         num_of_chromosome_slider = makeSlider(1, 64, self.numberOfChromosome)
@@ -198,7 +198,7 @@ class MainWindow(QWidget):
         layout_items.append(crossing_prob_slider)
 
         # Selection
-        selection_method_label = QLabel('Wybierz metode selekcji')
+        selection_method_label = QLabel('Wybierz metodę selekcji')
         layout_items.append(selection_method_label)
 
         selection_combo_box = QComboBox(self)
@@ -215,7 +215,7 @@ class MainWindow(QWidget):
         layout_items.append(self.selection_options_slider)
 
         # Crossing
-        selection_method_label = QLabel('Wybierz forme krzyżowania')
+        selection_method_label = QLabel('Wybierz formę krzyżowania')
         layout_items.append(selection_method_label)
 
         crossing_combo_box = QComboBox(self)
@@ -233,7 +233,7 @@ class MainWindow(QWidget):
         layout_items.append(self.crossing_options_slider)
 
         # Mutations
-        mutation_label = QLabel('Wybierz forme mutacji')
+        mutation_label = QLabel('Wybierz formę mutacji')
         layout_items.append(mutation_label)
 
         mutation_combo_box = QComboBox(self)
