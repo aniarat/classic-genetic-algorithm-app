@@ -15,6 +15,7 @@ class BestSelection(SelectionMethod):
         sorted_population = sorted(combined_population, key=lambda x: x[1])
         selected_parents = [individual[0] for individual in sorted_population[:num_parents]]
         return selected_parents
+    
     def maxSelect(self, population, fitness_values, num_parents):
         combined_population = list(zip(population, fitness_values))
         sorted_population = sorted(combined_population, key=lambda x: x[1], reverse=True)

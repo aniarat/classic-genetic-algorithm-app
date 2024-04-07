@@ -45,6 +45,7 @@ class Model:
         self.title = title
         self.init_population = initPopulation(chromosome_length, number_of_dimensions, size_of_population)
 
+
     def find_best_spec(self, fnu, population):
         best_index = 0
         for i in range(1, len(population)):
