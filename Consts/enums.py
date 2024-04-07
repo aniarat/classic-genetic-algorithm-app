@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class SelectionMechods(Enum):
     BEST = 0
     ROULETTE = 1
@@ -9,6 +10,8 @@ class SelectionMechods(Enum):
     TOURNAMENT_STRING = 'Selekcja turniejowa'
 
     ALL_OPTIONS_STRING = [BEST_STRING, ROULETTE_STRING, TOURNAMENT_STRING]
+
+
 class CrossingMechods(Enum):
     SINGLE_POINT = 0
     DOUBLE_POINT = 1
@@ -35,6 +38,8 @@ class CrossingMechods(Enum):
                           SCANNING_STRING,
                           PARTIAL_STRING,
                           MULTIVARIATE_STRING]
+
+
 class MutationMechods(Enum):
     EDGE = 0
     SINGLE_POINT = 1
@@ -44,3 +49,8 @@ class MutationMechods(Enum):
     DOUBLE_POINT_STRING = '2 punktowa'
 
     ALL_OPTIONS_STRING = [EDGE_STRING, SINGLE_POINT_STRING, DOUBLE_POINT_STRING]
+
+
+class MinMax(Enum):
+    MIN = 0
+    MAX = 1
