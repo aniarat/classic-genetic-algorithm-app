@@ -1,6 +1,6 @@
 import sys
-from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods
-from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox
+from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, MinMax
+from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox, QCheckBox
 
 from Helpers.functions import rastrigin
 from Helpers.layout import makeSlider
@@ -25,6 +25,7 @@ class MainWindow(QWidget):
     selectionName = SelectionMechods.BEST_STRING.value
     crossingName = CrossingMechods.SINGLE_POINT_STRING.value
     mutationName = MutationMechods.EDGE_STRING.value
+    minmax = MinMax.MIN
 
     selection_method = BestSelection(2).select
     crossing_method = SinglePointCrossover(2).crossover
@@ -42,7 +43,8 @@ class MainWindow(QWidget):
                             mutation_prob=self.mutationProb,
                             number_of_dimensions=self.numberOfDimensions,
                             func=rastrigin,
-                            title=f'{self.selectionName} - {self.crossingName}')
+                            title=f'{self.selectionName} - {self.crossingName}',
+                            direction=self.minmax)
         final_string = ''
         final_string += local_model.getStartString()
         local_model.fitness()
@@ -55,7 +57,9 @@ class MainWindow(QWidget):
         self.selection_options_slider.hide()
         match option:
             case SelectionMechods.BEST.value:
-                self.selection_method = BestSelection(self.numberOfDimensions).select
+                self.selection_method = BestSelection(
+                    self.numberOfDimensions).select if self.minmax == MinMax.MIN else BestSelection(
+                    self.numberOfDimensions).maxSelect
                 self.selectionName = SelectionMechods.BEST_STRING.value
             case SelectionMechods.ROULETTE.value:
                 self.selection_method = RouletteWheelSelection(self.numberOfDimensions).select
@@ -63,10 +67,13 @@ class MainWindow(QWidget):
             case SelectionMechods.TOURNAMENT.value:
                 self.selection_options_label.setText(f'Wielkość tunrieju {self.selection_options_slider.value()}')
                 self.selection_options_label.show()
-                self.selection_options_slider.valueChanged.connect(self.set_turnament_size)
+                self.selection_options_slider.valueChanged.connect(self.set_tournament_size)
                 self.selection_options_slider.show()
-                self.selection_method = TournamentSelection(self.selection_options_slider.value(),
-                                                            self.numberOfDimensions).select
+                self.selection_method = TournamentSelection(
+                    self.selection_options_slider.value(),
+                    self.numberOfDimensions).select if self.minmax == MinMax.MIN else TournamentSelection(
+                    self.selection_options_slider.value(),
+                    self.numberOfDimensions).maxSelect
                 self.selectionName = SelectionMechods.TOURNAMENT_STRING.value
 
     def set_crossing_method(self, option: int):
@@ -75,7 +82,7 @@ class MainWindow(QWidget):
         match option:
             case CrossingMechods.SINGLE_POINT.value:
                 self.crossing_method = SinglePointCrossover(self.numberOfDimensions).crossover
-                self.crossingName = CrossingMechods.SINGLE_POINT_STRING_STRING.value
+                self.crossingName = CrossingMechods.SINGLE_POINT_STRING.value
             case CrossingMechods.DOUBLE_POINT.value:
                 self.crossingName = CrossingMechods.DOUBLE_POINT_STRING.value
                 self.crossing_method = TwoPointCrossover(self.numberOfDimensions).crossover
@@ -103,7 +110,8 @@ class MainWindow(QWidget):
                 self.crossing_options_slider.valueChanged.connect(self.set_q)
                 self.crossing_options_slider.show()
                 self.crossing_method = MultivariateCrossover(self.crossingProb,
-                                                             self.crossing_options_slider.value(), self.numberOfDimensions).crossover
+                                                             self.crossing_options_slider.value(),
+                                                             self.numberOfDimensions).crossover
 
     def set_mutation_method(self, option: int):
         match option:
@@ -129,11 +137,11 @@ class MainWindow(QWidget):
         self.numberOfEpoch = val
         self.numberOfEpochLabel.setText(f'Liczba epok {self.numberOfEpoch}')
 
-    def set_number_of_hromosome(self, val):
+    def set_number_of_chromosome(self, val):
         self.numberOfChromosome = val
         self.numberOfChromosomeLabel.setText(f'Długość chromosomu {self.numberOfChromosome}')
 
-    def set_corossing_prob(self, val):
+    def set_crossing_prob(self, val):
         self.crossingProb = val / 1000
         self.crossingProbLabel.setText(f'Prawdopodobieństwo krzyżowania {self.crossingProb}')
 
@@ -145,9 +153,13 @@ class MainWindow(QWidget):
         self.crossing_options_label.setText(f'q {val}')
         self.crossing_method = MultivariateCrossover(self.crossingProb, val, self.numberOfDimensions).crossover
 
-    def set_turnament_size(self, val):
+    def set_tournament_size(self, val):
         self.selection_options_label.setText(f'Wielkość turnieju {val}')
         self.selection_method = TournamentSelection(val, self.numberOfDimensions).select
+
+    def set_min_max(self, val):
+        self.minmax = MinMax.MAX if val == 2 else MinMax.MIN
+        self.minmax_checkbox.setText(f'Szukaj {'minimum' if self.minmax == MinMax.MIN else 'maximum'} funkcji.')
 
     def __init__(self):
         super().__init__()
@@ -157,6 +169,11 @@ class MainWindow(QWidget):
         button = QPushButton("Oblicz")
         button.clicked.connect(self.start_calc)
         layout_items.append(button)
+
+        # MinMax
+        self.minmax_checkbox = QCheckBox(f'Szukaj {'minimum' if self.minmax == MinMax.MIN else 'maximum'} funkcji.')
+        self.minmax_checkbox.stateChanged.connect(self.set_min_max)
+        layout_items.append(self.minmax_checkbox)
 
         # Population Size
         self.populationSizeLabel = QLabel(f'Wielkość populacji {self.populationSize}')
@@ -179,7 +196,7 @@ class MainWindow(QWidget):
         layout_items.append(self.numberOfChromosomeLabel)
 
         num_of_chromosome_slider = makeSlider(1, 64, self.numberOfChromosome)
-        num_of_chromosome_slider.valueChanged.connect(self.set_number_of_hromosome)
+        num_of_chromosome_slider.valueChanged.connect(self.set_number_of_chromosome)
         layout_items.append(num_of_chromosome_slider)
 
         # Epoch
@@ -194,7 +211,7 @@ class MainWindow(QWidget):
         layout_items.append(self.crossingProbLabel)
 
         crossing_prob_slider = makeSlider(1, 1000, self.crossingProb * 1000)
-        crossing_prob_slider.valueChanged.connect(self.set_corossing_prob)
+        crossing_prob_slider.valueChanged.connect(self.set_crossing_prob)
         layout_items.append(crossing_prob_slider)
 
         # Selection

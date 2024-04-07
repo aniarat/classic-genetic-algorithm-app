@@ -1,20 +1,23 @@
 import random
 
-#TODO: wersje maksymalizacji każdej z selekcji (?)
+
+# TODO: wersje maksymalizacji każdej z selekcji (?)
 
 class SelectionMethod:
     def select(self, population, fitness_values, num_parents):
         pass
 
+
 class BestSelection(SelectionMethod):
     def __init__(self, number_of_dimensions):
         self.number_of_dimensions = number_of_dimensions
-    def select(self, population, fitness_values, num_parents: int):
 
+    def select(self, population, fitness_values, num_parents: int):
         combined_population = list(zip(population, fitness_values))
         sorted_population = sorted(combined_population, key=lambda x: x[1])
         selected_parents = [individual[0] for individual in sorted_population[:num_parents]]
         return selected_parents
+
     def maxSelect(self, population, fitness_values, num_parents):
         combined_population = list(zip(population, fitness_values))
         sorted_population = sorted(combined_population, key=lambda x: x[1], reverse=True)
@@ -25,6 +28,7 @@ class BestSelection(SelectionMethod):
 class RouletteWheelSelection(SelectionMethod):
     def __init__(self, number_of_dimensions):
         self.number_of_dimensions = number_of_dimensions
+
     def select(self, population, fitness_values, num_parents):
         total_fitness = sum(fitness_values)
         normalized_fitness = [f / total_fitness for f in fitness_values]
@@ -38,6 +42,7 @@ class RouletteWheelSelection(SelectionMethod):
                     selected_parents.append(population[i])
                     break
         return selected_parents
+
 
 class TournamentSelection(SelectionMethod):
     def __init__(self, tournament_size, number_of_dimensions):
@@ -54,6 +59,7 @@ class TournamentSelection(SelectionMethod):
             winner = population[winner_index]
             selected_parents.append(winner)
         return selected_parents
+
     def maxSelect(self, population, fitness_values, num_parents):
         selected_parents = []
         population_size = len(population)

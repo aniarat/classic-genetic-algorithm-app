@@ -2,6 +2,7 @@ import copy
 import random
 import time
 
+from Consts.enums import MinMax
 from Helpers.decimalBinaryMath import binary_to_decimal
 from Helpers.parents import initPopulation
 import numpy as np
@@ -30,7 +31,8 @@ class Model:
                  mutation_prob,
                  number_of_dimensions,
                  func,
-                 title):
+                 title,
+                 direction):
         self.number_of_epoch = number_of_epoch
         self.size_of_population = size_of_population
         self.chromosome_length = chromosome_length
@@ -44,19 +46,22 @@ class Model:
         self.func = func
         self.title = title
         self.init_population = initPopulation(chromosome_length, number_of_dimensions, size_of_population)
+        self.direction = direction
 
-    def find_best_spec(self, fnu, population):
+    def find_best_spec(self, fnu, population, direction: MinMax):
         best_index = 0
         for i in range(1, len(population)):
             value1 = self.binaryToDecimalSpec(population[best_index])
             value2 = self.binaryToDecimalSpec(population[i])
-            if fnu(*value1) > fnu(*value2):
+            if ((fnu(*value1) > fnu(*value2) and direction == MinMax.MIN)
+                    or
+                    (fnu(*value1) < fnu(*value2) and direction == MinMax.MAX)):
                 best_index = i
         return population[best_index]
 
     def getStartString(self):
         return_string = ''
-        map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.init_population))
+        map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.init_population, self.direction))
         map2 = copy.deepcopy(map1)
         result = self.func(*map1)
         return_string += '\n---------------------------START---------------------------\n'
@@ -65,7 +70,7 @@ class Model:
 
     def getEndString(self):
         return_string = ''
-        map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.end_population))
+        map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.end_population, self.direction))
         map2 = copy.deepcopy(map1)
         result = self.func(*map1)
         return_string += '\n----------------------------END----------------------------\n'
@@ -76,7 +81,7 @@ class Model:
     def appendToAllArrays(self, all_res, population):
         self.avg_values.append(np.mean(all_res))
         self.stddev_values.append(np.std(all_res))
-        self.best_spec.append(self.binaryToDecimalSpec(self.find_best_spec(self.func, population)))
+        self.best_spec.append(self.binaryToDecimalSpec(self.find_best_spec(self.func, population, self.direction)))
         self.best_values.append(self.func(*self.best_spec[-1]))
 
     @staticmethod
@@ -101,14 +106,18 @@ class Model:
                 if random.random() >= self.crossing_probability:
                     temp_population += self.crossing_function(temp_population)
 
+            best_old_spec = self.find_best_spec(self.func, population, self.direction)
+            best_new_spec = self.find_best_spec(self.func, temp_population, self.direction)
+
             for i in range(len(temp_population)):
                 if random.random() >= self.mutation_prob:
                     for j in range(len(temp_population[i])):
-                        if random.random() >= self.mutation_prob:
+                        if random.random() >= self.mutation_prob and best_new_spec != temp_population[i]:
                             temp_population[i][j] = self.mutation_function(temp_population[i][j], self.mutation_prob)
-            # TODO: Add combo that choose min or max of function
-            temp_population.append(self.find_best_spec(self.func, population))
+
+            temp_population.append(best_old_spec)
             population = temp_population
+
         self.end_population = population
         self.end_time = time.perf_counter()
 
