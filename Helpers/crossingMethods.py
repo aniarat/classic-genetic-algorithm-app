@@ -139,7 +139,6 @@ class ScanningCrossover(CrossoverMethod):
             chosen_parent_index = random.randint(0, self.numberOfParents - 1)
             child[j] = parents[chosen_parent_index][j]
 
-        
         return [child]
 
 

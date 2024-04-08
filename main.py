@@ -42,7 +42,7 @@ class MainWindow(QWidget):
                             crossing_probability=self.crossingProb,
                             mutation_prob=self.mutationProb,
                             number_of_dimensions=self.numberOfDimensions,
-                            func=rastrigin,
+                            func=rastrigin(self.numberOfDimensions),
                             title=f'{self.selectionName} - {self.crossingName}',
                             direction=self.minmax)
         final_string = ''

@@ -47,6 +47,8 @@ class Model:
         self.title = title
         self.init_population = initPopulation(chromosome_length, number_of_dimensions, size_of_population)
         self.direction = direction
+       
+   
 
     def find_best_spec(self, fnu, population, direction: MinMax):
         best_index = 0
@@ -67,7 +69,7 @@ class Model:
         return_string += '\n---------------------------START---------------------------\n'
         return_string += f'f{list(map2)} = {result}' + '\n'
         return return_string
-
+    
     def getEndString(self):
         return_string = ''
         map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.end_population, self.direction))
@@ -106,6 +108,7 @@ class Model:
                 if random.random() >= self.crossing_probability:
                     temp_population += self.crossing_function(temp_population)
 
+        
             best_old_spec = self.find_best_spec(self.func, population, self.direction)
             best_new_spec = self.find_best_spec(self.func, temp_population, self.direction)
 
