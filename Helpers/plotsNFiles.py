@@ -9,6 +9,7 @@ def make_plot(values: list, file_name: str, title: str, y_scale: str = 'linear')
     plt.ylabel(file_name)
     plt.savefig(f'{file_name}.png')
     plt.figure()
+    plt.close('all')
 
 
 def save_to_file(values: list, spec: list, file_name: str) -> None:

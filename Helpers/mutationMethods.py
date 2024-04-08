@@ -1,7 +1,10 @@
 import random
+
+
 class MutationMethod:
     def mutate(self, individual, mutation_rate):
         pass
+
 
 class EdgeMutation(MutationMethod):
     def __init__(self, number_of_dimensions):
@@ -20,7 +23,8 @@ class EdgeMutation(MutationMethod):
                         mutated_individual[i] = 1 if mutated_individual[i] == 0 else 0
 
         return mutated_individual
-    
+
+
 class SinglePointMutation(MutationMethod):
     def __init__(self, number_of_dimensions):
         self.number_of_dimensions = number_of_dimensions
@@ -38,7 +42,8 @@ class SinglePointMutation(MutationMethod):
                 mutated_individual[i] = new_gene
 
         return mutated_individual
-    
+
+
 class TwoPointMutation(MutationMethod):
     def __init__(self, number_of_dimensions):
         self.number_of_dimensions = number_of_dimensions
