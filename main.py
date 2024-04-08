@@ -37,6 +37,7 @@ class MainWindow(QWidget):
     crossing_method = CrossingMechods.SINGLE_POINT
     mutation_method = MutationMechods.EDGE
     func = FunctionsOptions.RASTRIGIN
+    inversion_method = InversionMethods.TWO_POINT
 
     def start_calc(self):
         local_model = Model(number_of_epoch=self.numberOfEpoch,
@@ -131,7 +132,7 @@ class MainWindow(QWidget):
         match option:
             case InversionMethods.TWO_POINT.value:
                 self.inversionName = InversionMethods.TWO_POINT_STRING.value
-                self.inversion_method = InversionMethod(self.numberOfDimensions).inverse
+                self.inversion_method = InversionMethods.TWO_POINT
 
     def set_population_size(self, val):
         self.populationSize = val
@@ -374,15 +375,19 @@ class MainWindow(QWidget):
         layout_items.append(button)
 
          # Inwersja
+        inversion_layout = QHBoxLayout()
+        inversion_layout.setContentsMargins(0, 0, 0, 0)
         inversion_label = QLabel('Wybierz formę inwersji')
-        layout_items.append(inversion_label)
+        inversion_layout.addWidget(inversion_label)
 
         inversion_combo_box = QComboBox(self)
-
         inversion_combo_box.addItems(InversionMethods.ALL_OPTIONS_STRING.value)
-
         inversion_combo_box.currentIndexChanged.connect(self.set_inversion_method)
-        layout_items.append(inversion_combo_box)
+        inversion_layout.addWidget(inversion_combo_box)
+
+        inversion_container = QWidget()
+        inversion_container.setLayout(inversion_layout)
+        layout_items.append(inversion_container)
 
         # retrun of learn
         self.resLabel = QLabel('Wyniki:')

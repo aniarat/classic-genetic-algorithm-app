@@ -96,6 +96,9 @@ class Model:
                 self.mutation_function = SinglePointMutation(number_of_dimensions).mutate
             case MutationMechods.DOUBLE_POINT:
                 self.mutation_function = TwoPointMutation(number_of_dimensions).mutate
+        match inversion_function:
+            case InversionMethods.TWO_POINT:
+                self.inversion_function = InversionMethod(number_of_dimensions).inverse
 
     def find_best_spec(self, fn, population, direction: MinMax):
         best_index = 0
