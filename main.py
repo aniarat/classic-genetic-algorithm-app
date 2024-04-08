@@ -168,11 +168,11 @@ class MainWindow(QWidget):
         self.setWindowTitle("OE Proj 2. Wieczorek, Piwko, Ratowska")
         layout_items = []
 
-        function_label = QLabel("Wybierz funkcję:")
-        layout_items.append(function_label)
-
         function_layout = QHBoxLayout()
         function_layout.setContentsMargins(0, 0, 0, 0)
+
+        function_label = QLabel("Wybierz funkcję:")
+        function_layout.addWidget(function_label)
 
         self.rastrigin_radio = QRadioButton("Rastrigin")
         self.rastrigin_radio.setChecked(True)
@@ -189,11 +189,11 @@ class MainWindow(QWidget):
         layout_items.append(function_container)  # Dodajemy kontener do głównego układu
 
         # MinMax selection
-        minmax_label = QLabel("Szukaj:")
-        layout_items.append(minmax_label)
-
         minmax_layout = QHBoxLayout()
         minmax_layout.setContentsMargins(0, 0, 0, 0)
+
+        minmax_label = QLabel("Szukaj:")
+        minmax_layout.addWidget(minmax_label)
 
         self.min_radio = QRadioButton("Minimum")
         self.min_radio.setChecked(True)
