@@ -42,6 +42,21 @@ class RouletteWheelSelection(SelectionMethod):
                     selected_parents.append(population[i])
                     break
         return selected_parents
+    
+    def maxSelect(self, population, fitness_values, num_parents):
+        inverted_fitness_values = [-f for f in fitness_values]
+        total_fitness = sum(inverted_fitness_values)
+        normalized_fitness = [f / total_fitness for f in inverted_fitness_values]
+        relative_fitness = [f / sum(normalized_fitness) for f in normalized_fitness]
+        cumulative_probability = [sum(relative_fitness[:i+1]) for i in range(len(relative_fitness))]
+        selected_parents = []
+        for _ in range(num_parents):
+            rand = random.random()
+            for i, cp in enumerate(cumulative_probability):
+                if rand <= cp:
+                    selected_parents.append(population[i])
+                    break
+        return selected_parents
 
 
 class TournamentSelection(SelectionMethod):

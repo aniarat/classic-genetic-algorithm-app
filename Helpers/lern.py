@@ -55,9 +55,9 @@ class Model:
         for i in range(1, len(population)):
             value1 = self.binaryToDecimalSpec(population[best_index])
             value2 = self.binaryToDecimalSpec(population[i])
-            if ((fnu(*value1) > fnu(*value2) and direction == MinMax.MIN)
+            if ((fnu(value1) > fnu(value2) and direction == MinMax.MIN)
                     or
-                    (fnu(*value1) < fnu(*value2) and direction == MinMax.MAX)):
+                    (fnu(value1) < fnu(value2) and direction == MinMax.MAX)):
                 best_index = i
         return population[best_index]
 
@@ -65,7 +65,7 @@ class Model:
         return_string = ''
         map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.init_population, self.direction))
         map2 = copy.deepcopy(map1)
-        result = self.func(*map1)
+        result = self.func(list(map1))
         return_string += '\n---------------------------START---------------------------\n'
         return_string += f'f{list(map2)} = {result}' + '\n'
         return return_string
@@ -74,7 +74,7 @@ class Model:
         return_string = ''
         map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.end_population, self.direction))
         map2 = copy.deepcopy(map1)
-        result = self.func(*map1)
+        result = self.func(list(map1))
         return_string += '\n----------------------------END----------------------------\n'
         return_string += f'f{list(map2)} = {result}' + '\n'
         return_string += 'Czas: ' + f'{self.end_time - self.start_time:0.4f}' + ' sekund\n'
@@ -84,7 +84,7 @@ class Model:
         self.avg_values.append(np.mean(all_res))
         self.stddev_values.append(np.std(all_res))
         self.best_spec.append(self.binaryToDecimalSpec(self.find_best_spec(self.func, population, self.direction)))
-        self.best_values.append(self.func(*self.best_spec[-1]))
+        self.best_values.append(self.func(self.best_spec[-1]))
 
     @staticmethod
     def binaryToDecimalSpec(spec):
@@ -98,7 +98,7 @@ class Model:
         self.start_time = time.perf_counter()
         population = self.init_population
         for i in range(self.number_of_epoch):
-            all_res = list(self.func(*self.binaryToDecimalSpec(individual)) for individual in population)
+            all_res = list(self.func(self.binaryToDecimalSpec(individual)) for individual in population)
             self.appendToAllArrays(all_res, population)
             temp_population = self.selection_function(population,
                                                       all_res,

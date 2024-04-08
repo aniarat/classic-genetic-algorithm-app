@@ -73,7 +73,7 @@ class ThreePointCrossover(CrossoverMethod):
                                                                                                                       2]:]
             children1.append(child1)
             children2.append(child2)
-        print(children1)
+
         return children1, children2
 
 
@@ -100,7 +100,7 @@ class UniformCrossover(CrossoverMethod):
             children1.append(child1)
             children2.append(child2)
         
-        print(children1)
+
         return children1, children2
 
 
@@ -187,5 +187,5 @@ class MultivariateCrossover(CrossoverMethod):
                 child1 += parent1[i]
                 child2 += parent2[i]
 
-        print(child1)
+
         return child1, child2

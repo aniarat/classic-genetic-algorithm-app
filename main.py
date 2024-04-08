@@ -1,8 +1,8 @@
 import sys
 from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, MinMax
-from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox, QCheckBox
+from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox, QCheckBox, QRadioButton, QHBoxLayout
 
-from Helpers.functions import rastrigin
+from Helpers.functions import rastrigin, schwefel
 from Helpers.layout import makeSlider
 from Helpers.lern import Model
 
@@ -157,9 +157,18 @@ class MainWindow(QWidget):
         self.selection_options_label.setText(f'Wielkość turnieju {val}')
         self.selection_method = TournamentSelection(val, self.numberOfDimensions).select
 
-    def set_min_max(self, val):
-        self.minmax = MinMax.MAX if val == 2 else MinMax.MIN
-        self.minmax_checkbox.setText(f'Szukaj {'minimum' if self.minmax == MinMax.MIN else 'maximum'} funkcji.')
+    def set_min_max(self):
+        if self.min_radio.isChecked():
+            self.minmax = MinMax.MIN
+        else:
+            self.minmax = MinMax.MAX
+
+    def set_function(self):
+        if self.rastrigin_radio.isChecked():
+            self.func = rastrigin(self.numberOfDimensions)
+        else:
+            self.func = schwefel(self.numberOfDimensions)
+
 
     def __init__(self):
         super().__init__()
@@ -170,11 +179,43 @@ class MainWindow(QWidget):
         button.clicked.connect(self.start_calc)
         layout_items.append(button)
 
-        # MinMax
-        self.minmax_checkbox = QCheckBox(f'Szukaj {'minimum' if self.minmax == MinMax.MIN else 'maximum'} funkcji.')
-        self.minmax_checkbox.stateChanged.connect(self.set_min_max)
-        layout_items.append(self.minmax_checkbox)
 
+        function_label = QLabel("Wybierz funkcję:")
+        layout_items.append(function_label)
+
+        function_layout = QHBoxLayout()  
+        self.rastrigin_radio = QRadioButton("Rastrigin")
+        self.rastrigin_radio.setChecked(True)
+        self.rastrigin_radio.toggled.connect(self.set_function)
+        function_layout.addWidget(self.rastrigin_radio)  
+
+        self.schwefel_radio = QRadioButton("Schwefel")
+        self.schwefel_radio.toggled.connect(self.set_function)
+        function_layout.addWidget(self.schwefel_radio)  
+
+        function_container = QWidget()  # Tworzymy kontener dla układu w poziomie
+        function_container.setLayout(function_layout)  # Ustawiamy układ w poziomie w kontenerze
+
+        layout_items.append(function_container)  # Dodajemy kontener do głównego układu
+
+        # MinMax selection
+        minmax_label = QLabel("Szukaj:")
+        layout_items.append(minmax_label)
+
+        minmax_layout = QHBoxLayout()  
+        self.min_radio = QRadioButton("Minimum")
+        self.min_radio.setChecked(True)
+        self.min_radio.toggled.connect(self.set_min_max)
+        minmax_layout.addWidget(self.min_radio)  
+
+        self.max_radio = QRadioButton("Maksimum")
+        self.max_radio.toggled.connect(self.set_min_max)
+        minmax_layout.addWidget(self.max_radio)  
+
+        minmax_container = QWidget()  # Tworzymy kontener dla układu w poziomie
+        minmax_container.setLayout(minmax_layout)  # Ustawiamy układ w poziomie w kontenerze
+
+        layout_items.append(minmax_container)
         # Population Size
         self.populationSizeLabel = QLabel(f'Wielkość populacji {self.populationSize}')
         layout_items.append(self.populationSizeLabel)
