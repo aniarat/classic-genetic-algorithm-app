@@ -369,11 +369,6 @@ class MainWindow(QWidget):
         mutation_prob_container.setLayout(mutation_prob_layout)
         layout_items.append(mutation_prob_container)
 
-        # Start
-        button = QPushButton("Oblicz")
-        button.clicked.connect(self.start_calc)
-        layout_items.append(button)
-
          # Inwersja
         inversion_layout = QHBoxLayout()
         inversion_layout.setContentsMargins(0, 0, 0, 0)
@@ -388,6 +383,11 @@ class MainWindow(QWidget):
         inversion_container = QWidget()
         inversion_container.setLayout(inversion_layout)
         layout_items.append(inversion_container)
+
+        # Start
+        button = QPushButton("Oblicz")
+        button.clicked.connect(self.start_calc)
+        layout_items.append(button)
 
         # retrun of learn
         self.resLabel = QLabel('Wyniki:')

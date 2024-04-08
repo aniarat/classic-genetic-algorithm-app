@@ -2,11 +2,12 @@ import copy
 import random
 import time
 
-from Consts.enums import MinMax, CrossingMechods, SelectionMechods, MutationMechods, FunctionsOptions
+from Consts.enums import MinMax, CrossingMechods, SelectionMechods, MutationMechods, FunctionsOptions, InversionMethods as InversionMethodsEnum
 from Helpers.crossingMethods import SinglePointCrossover, MultivariateCrossover, PartialCopyCrossover, \
     ScanningCrossover, GrainCrossover, UniformCrossover, ThreePointCrossover, TwoPointCrossover
 from Helpers.decimalBinaryMath import binary_to_decimal
 from Helpers.functions import rastrigin, schwefel
+from Helpers.inversionMethod import InversionMethod
 from Helpers.mutationMethods import EdgeMutation, SinglePointMutation, TwoPointMutation
 from Helpers.parents import initPopulation
 import numpy as np
@@ -34,7 +35,7 @@ class Model:
                  mutation_function: MutationMechods,
                  selection_function: SelectionMechods,
                  mutation_prob: float,
-                 inversion_function,
+                 inversion_function: InversionMethodsEnum,
                  inversion_prob: float,
                  number_of_dimensions: int,
                  func: FunctionsOptions,
@@ -51,7 +52,6 @@ class Model:
         self.mutation_function = mutation_function
         self.selection_function = selection_function
         self.mutation_prob = mutation_prob
-        self.inversion_function = inversion_function
         self.inversion_prob = inversion_prob
         self.number_of_dimensions = number_of_dimensions
         self.func = func
@@ -97,7 +97,7 @@ class Model:
             case MutationMechods.DOUBLE_POINT:
                 self.mutation_function = TwoPointMutation(number_of_dimensions).mutate
         match inversion_function:
-            case InversionMethods.TWO_POINT:
+            case InversionMethodsEnum.TWO_POINT:
                 self.inversion_function = InversionMethod(number_of_dimensions).inverse
 
     def find_best_spec(self, fn, population, direction: MinMax):
