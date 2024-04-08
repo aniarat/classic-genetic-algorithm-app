@@ -172,6 +172,8 @@ class MainWindow(QWidget):
         layout_items.append(function_label)
 
         function_layout = QHBoxLayout()
+        function_layout.setContentsMargins(0, 0, 0, 0)
+
         self.rastrigin_radio = QRadioButton("Rastrigin")
         self.rastrigin_radio.setChecked(True)
         self.rastrigin_radio.toggled.connect(self.set_function)
@@ -191,6 +193,8 @@ class MainWindow(QWidget):
         layout_items.append(minmax_label)
 
         minmax_layout = QHBoxLayout()
+        minmax_layout.setContentsMargins(0, 0, 0, 0)
+
         self.min_radio = QRadioButton("Minimum")
         self.min_radio.setChecked(True)
         self.min_radio.toggled.connect(self.set_min_max)
@@ -245,22 +249,36 @@ class MainWindow(QWidget):
         num_of_epoch_slider.valueChanged.connect(self.set_number_of_epoch)
         layout_items.append(num_of_epoch_slider)
 
+        # Crossing
+        crossing_layout = QHBoxLayout()
+        crossing_layout.setContentsMargins(0, 0, 0, 0)
+
         self.crossingProbLabel = QLabel(f'Prawdopodobieństwo krzyżowania {self.crossingProb}')
-        layout_items.append(self.crossingProbLabel)
+        crossing_layout.addWidget(self.crossingProbLabel)
 
         crossing_prob_slider = makeSlider(1, 1000, self.crossingProb * 1000)
         crossing_prob_slider.valueChanged.connect(self.set_crossing_prob)
-        layout_items.append(crossing_prob_slider)
+        crossing_layout.addWidget(crossing_prob_slider)
+
+        crossing_container = QWidget()
+        crossing_container.setLayout(crossing_layout)
+        layout_items.append(crossing_container)
 
         # Selection
+        selection_layout = QHBoxLayout()
+        selection_layout.setContentsMargins(0, 0, 0, 0)
         selection_method_label = QLabel('Wybierz metodę selekcji')
-        layout_items.append(selection_method_label)
+        selection_layout.addWidget(selection_method_label)
 
         selection_combo_box = QComboBox(self)
         selection_combo_box.addItems(SelectionMechods.ALL_OPTIONS_STRING.value)
 
         selection_combo_box.currentIndexChanged.connect(self.set_selection_method)
-        layout_items.append(selection_combo_box)
+        selection_layout.addWidget(selection_combo_box)
+
+        selection_container = QWidget()
+        selection_container.setLayout(selection_layout)
+        layout_items.append(selection_container)
 
         self.selection_options_label = QLabel('')
         self.selection_options_label.hide()
@@ -270,15 +288,19 @@ class MainWindow(QWidget):
         layout_items.append(self.selection_options_slider)
 
         # Crossing
+        crossing_layout = QHBoxLayout()
+        crossing_layout.setContentsMargins(0, 0, 0, 0)
         selection_method_label = QLabel('Wybierz formę krzyżowania')
-        layout_items.append(selection_method_label)
+        crossing_layout.addWidget(selection_method_label)
 
         crossing_combo_box = QComboBox(self)
-
         crossing_combo_box.addItems(CrossingMechods.ALL_OPTIONS_STRING.value)
-
         crossing_combo_box.currentIndexChanged.connect(self.set_crossing_method)
-        layout_items.append(crossing_combo_box)
+        crossing_layout.addWidget(crossing_combo_box)
+
+        crossing_container = QWidget()
+        crossing_container.setLayout(crossing_layout)
+        layout_items.append(crossing_container)
 
         self.crossing_options_label = QLabel('')
         self.crossing_options_label.hide()
@@ -288,22 +310,33 @@ class MainWindow(QWidget):
         layout_items.append(self.crossing_options_slider)
 
         # Mutations
+        mutation_layout = QHBoxLayout()
+        mutation_layout.setContentsMargins(0, 0, 0, 0)
+
         mutation_label = QLabel('Wybierz formę mutacji')
-        layout_items.append(mutation_label)
+        mutation_layout.addWidget(mutation_label)
 
         mutation_combo_box = QComboBox(self)
-
         mutation_combo_box.addItems(MutationMechods.ALL_OPTIONS_STRING.value)
-
         mutation_combo_box.currentIndexChanged.connect(self.set_mutation_method)
-        layout_items.append(mutation_combo_box)
+        mutation_layout.addWidget(mutation_combo_box)
 
+        mutation_container = QWidget()
+        mutation_container.setLayout(mutation_layout)
+        layout_items.append(mutation_container)
+
+        mutation_prob_layout = QHBoxLayout()
+        mutation_prob_layout.setContentsMargins(0, 0, 0, 0)
         self.mutationLabel = QLabel(f'Prawdopodobieństwo mutacji {self.mutationProb}')
-        layout_items.append(self.mutationLabel)
+        mutation_prob_layout.addWidget(self.mutationLabel)
 
         mutation_slider = makeSlider(1, 1000, self.mutationProb * 1000)
         mutation_slider.valueChanged.connect(self.set_mutation_prob)
-        layout_items.append(mutation_slider)
+        mutation_prob_layout.addWidget(mutation_slider)
+
+        mutation_prob_container = QWidget()
+        mutation_prob_container.setLayout(mutation_prob_layout)
+        layout_items.append(mutation_prob_container)
 
         # Start
         button = QPushButton("Oblicz")

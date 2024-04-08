@@ -106,8 +106,7 @@ class Model:
         map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.init_population, self.direction))
         map2 = copy.deepcopy(map1)
         result = self.func(list(map1))
-        return_string += '\n---------------------------START---------------------------\n'
-        return_string += 'f('
+        return_string += '\nstart f('
         for val in list(map2):
             return_string += f'{val:.4f}, '
         return_string = return_string[:-2]
@@ -119,8 +118,7 @@ class Model:
         map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.end_population, self.direction))
         map2 = copy.deepcopy(map1)
         result = self.func(list(map1))
-        return_string += '\n----------------------------END----------------------------\n'
-        return_string += 'f('
+        return_string += '\nend f('
         for val in list(map2):
             return_string += f'{val:.4f}, '
         return_string = return_string[:-2]
