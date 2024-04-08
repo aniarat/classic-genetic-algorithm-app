@@ -48,7 +48,7 @@ class MutationMechods(Enum):
     SINGLE_POINT_STRING = '1 punktowa'
     DOUBLE_POINT_STRING = '2 punktowa'
 
-    ALL_OPTIONS_STRING = [EDGE_STRING, SINGLE_POINT_STRING, DOUBLE_POINT_STRING]
+    ALL_OPTIONS_STRING = [SINGLE_POINT_STRING, DOUBLE_POINT_STRING, EDGE_STRING]
 
 class InversionMethods(Enum):
     TWO_POINT = 0
@@ -59,3 +59,8 @@ class InversionMethods(Enum):
 class MinMax(Enum):
     MIN = 0
     MAX = 1
+
+
+class FunctionsOptions(Enum):
+    RASTRIGIN = 0
+    SCHWEFEK = 1
