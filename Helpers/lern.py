@@ -107,7 +107,11 @@ class Model:
         map2 = copy.deepcopy(map1)
         result = self.func(list(map1))
         return_string += '\n---------------------------START---------------------------\n'
-        return_string += f'f{list(map2)} = {result}' + '\n'
+        return_string += 'f('
+        for val in list(map2):
+            return_string += f'{val:.4f}, '
+        return_string = return_string[:-2]
+        return_string += f') = {result:.4f}' + '\n'
         return return_string
 
     def getEndString(self):
@@ -116,7 +120,11 @@ class Model:
         map2 = copy.deepcopy(map1)
         result = self.func(list(map1))
         return_string += '\n----------------------------END----------------------------\n'
-        return_string += f'f{list(map2)} = {result}' + '\n'
+        return_string += 'f('
+        for val in list(map2):
+            return_string += f'{val:.4f}, '
+        return_string = return_string[:-2]
+        return_string += f') = {result:.4f}' + '\n'
         return_string += 'Czas: ' + f'{self.end_time - self.start_time:0.4f}' + ' sekund\n'
         return return_string
 
