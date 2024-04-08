@@ -29,6 +29,8 @@ class Model:
                  mutation_function,
                  selection_function,
                  mutation_prob,
+                 inversion_function,
+                 inversion_prob,
                  number_of_dimensions,
                  func,
                  title,
@@ -42,13 +44,15 @@ class Model:
         self.mutation_function = mutation_function
         self.selection_function = selection_function
         self.mutation_prob = mutation_prob
+        self.inversion_function = inversion_function
+        self.inversion_prob = inversion_prob
         self.number_of_dimensions = number_of_dimensions
         self.func = func
         self.title = title
         self.init_population = initPopulation(chromosome_length, number_of_dimensions, size_of_population)
         self.direction = direction
-       
-   
+
+
 
     def find_best_spec(self, fnu, population, direction: MinMax):
         best_index = 0
@@ -69,7 +73,7 @@ class Model:
         return_string += '\n---------------------------START---------------------------\n'
         return_string += f'f{list(map2)} = {result}' + '\n'
         return return_string
-    
+
     def getEndString(self):
         return_string = ''
         map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.end_population, self.direction))
@@ -96,32 +100,32 @@ class Model:
         self.stddev_values = []
         self.best_spec = []
         self.start_time = time.perf_counter()
-        population = self.init_population
-        for i in range(self.number_of_epoch):
+        population = self.init_population # początkowa populacja
+        for i in range(self.number_of_epoch): # iteracja po liczbie epok
             all_res = list(self.func(self.binaryToDecimalSpec(individual)) for individual in population)
             self.appendToAllArrays(all_res, population)
             temp_population = self.selection_function(population,
                                                       all_res,
-                                                      self.number_of_parents)
+                                                      self.number_of_parents) # selekcja nowej populacji
 
             while len(temp_population) < self.size_of_population:
-                if random.random() >= self.crossing_probability:
+                if random.random() >= self.crossing_probability: # krzyżowanie pod warunkiem
                     temp_population += self.crossing_function(temp_population)
 
-        
-            best_old_spec = self.find_best_spec(self.func, population, self.direction)
-            best_new_spec = self.find_best_spec(self.func, temp_population, self.direction)
+
+            best_old_spec = self.find_best_spec(self.func, population, self.direction) # szukanie najlepszego osobnika w starej populacji
+            best_new_spec = self.find_best_spec(self.func, temp_population, self.direction) # szukanie najlepszego osobnika w nowej populacji
 
             for i in range(len(temp_population)):
-                if random.random() >= self.mutation_prob:
+                if random.random() >= self.mutation_prob: # mutacja pod warunkiem
                     for j in range(len(temp_population[i])):
-                        if random.random() >= self.mutation_prob and best_new_spec != temp_population[i]:
+                        if random.random() >= self.mutation_prob and best_new_spec != temp_population[i]: # sprawdzenie, czy osobnik nie jest identyczny z najlepszym nowym osobnikiem, aby uniknąć mutacji najlepszego osobnika
                             temp_population[i][j] = self.mutation_function(temp_population[i][j], self.mutation_prob)
 
-            temp_population.append(best_old_spec)
+            temp_population.append(best_old_spec) # dodanie nejlepszego osobnika z poprzedniej populacji do nowej populacji
             population = temp_population
 
-        self.end_population = population
+        self.end_population = population # zapisanie ostatecznej populacji
         self.end_time = time.perf_counter()
 
     def getChats(self):
