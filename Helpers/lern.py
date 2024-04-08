@@ -112,17 +112,21 @@ class Model:
                 if random.random() >= self.crossing_probability: # krzyżowanie pod warunkiem
                     temp_population += self.crossing_function(temp_population)
 
-
+            # strategia elitarna
             best_old_spec = self.find_best_spec(self.func, population, self.direction) # szukanie najlepszego osobnika w starej populacji
             best_new_spec = self.find_best_spec(self.func, temp_population, self.direction) # szukanie najlepszego osobnika w nowej populacji
 
-            for i in range(len(temp_population)):
+            for i in range(len(temp_population)): # iteracja po osobnikach
                 if random.random() >= self.mutation_prob: # mutacja pod warunkiem
-                    for j in range(len(temp_population[i])):
+                    for j in range(len(temp_population[i])): # iteracja po genach
                         if random.random() >= self.mutation_prob and best_new_spec != temp_population[i]: # sprawdzenie, czy osobnik nie jest identyczny z najlepszym nowym osobnikiem, aby uniknąć mutacji najlepszego osobnika
                             temp_population[i][j] = self.mutation_function(temp_population[i][j], self.mutation_prob)
 
-            temp_population.append(best_old_spec) # dodanie nejlepszego osobnika z poprzedniej populacji do nowej populacji
+            for i in range(len(temp_population)):
+                if random.random() >= self.inversion_prob: # mutacja pod warunkiem
+                    temp_population[i] = self.inversion_function(temp_population[i], self.inversion_prob)
+
+            temp_population.append(best_old_spec) # dodanie najlepszego osobnika z poprzedniej populacji do nowej populacji
             population = temp_population
 
         self.end_population = population # zapisanie ostatecznej populacji

@@ -1,5 +1,5 @@
 import sys
-from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, MinMax
+from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, InversionMethods, MinMax
 from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox, QCheckBox, QRadioButton, QHBoxLayout
 
 from Helpers.functions import rastrigin, schwefel
@@ -11,7 +11,7 @@ from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, Thr
     GrainCrossover, ScanningCrossover, PartialCopyCrossover, MultivariateCrossover
 
 from Helpers.mutationMethods import EdgeMutation, SinglePointMutation, TwoPointMutation
-
+from Helpers.inversionMethod import InversionMethod
 
 class MainWindow(QWidget):
     populationSize = 40
@@ -20,16 +20,19 @@ class MainWindow(QWidget):
     numberOfEpoch = 100
     crossingProb = 0.1
     mutationProb = 0.1
+    inversionProb = 0.1
     numberOfDimensions = 2
 
     selectionName = SelectionMechods.BEST_STRING.value
     crossingName = CrossingMechods.SINGLE_POINT_STRING.value
     mutationName = MutationMechods.EDGE_STRING.value
+    inversionName = InversionMethods.TWO_POINT_STRING.value
     minmax = MinMax.MIN
 
     selection_method = BestSelection(2).select
     crossing_method = SinglePointCrossover(2).crossover
     mutation_method = EdgeMutation(2).mutate
+    inversion_method = InversionMethod(2).inverse
 
     def start_calc(self):
         local_model = Model(number_of_epoch=self.numberOfEpoch,
@@ -41,6 +44,8 @@ class MainWindow(QWidget):
                             selection_function=self.selection_method,
                             crossing_probability=self.crossingProb,
                             mutation_prob=self.mutationProb,
+                            inversion_prob = self.inversionProb,
+                            inversion_function = self.inversion_method,
                             number_of_dimensions=self.numberOfDimensions,
                             func=rastrigin(self.numberOfDimensions),
                             title=f'{self.selectionName} - {self.crossingName}',
@@ -125,6 +130,12 @@ class MainWindow(QWidget):
                 self.mutationName = MutationMechods.DOUBLE_POINT_STRING.value
                 self.mutation_method = TwoPointMutation(self.numberOfDimensions).mutate
 
+    def set_inversion_method(self, option: int):
+        match option:
+            case InversionMethods.TWO_POINT.value:
+                self.inversionName = InversionMethods.TWO_POINT_STRING.value
+                self.inversion_method = InversionMethod(self.numberOfDimensions).inverse
+
     def set_population_size(self, val):
         self.populationSize = val
         self.populationSizeLabel.setText(f'Wielkość populacji {self.populationSize}')
@@ -148,6 +159,10 @@ class MainWindow(QWidget):
     def set_mutation_prob(self, val):
         self.mutationProb = val / 1000
         self.mutationLabel.setText(f'Prawdopodobieństwo mutacji {self.mutationProb}')
+
+    def set_inversion_prob(self, val):
+        self.inversionProb = val / 1000
+        self.inversionProbLabel.setText(f'Prawdopodobieństwo inwersji {self.inversionProb}')
 
     def set_q(self, val):
         self.crossing_options_label.setText(f'q {val}')
@@ -183,15 +198,15 @@ class MainWindow(QWidget):
         function_label = QLabel("Wybierz funkcję:")
         layout_items.append(function_label)
 
-        function_layout = QHBoxLayout()  
+        function_layout = QHBoxLayout()
         self.rastrigin_radio = QRadioButton("Rastrigin")
         self.rastrigin_radio.setChecked(True)
         self.rastrigin_radio.toggled.connect(self.set_function)
-        function_layout.addWidget(self.rastrigin_radio)  
+        function_layout.addWidget(self.rastrigin_radio)
 
         self.schwefel_radio = QRadioButton("Schwefel")
         self.schwefel_radio.toggled.connect(self.set_function)
-        function_layout.addWidget(self.schwefel_radio)  
+        function_layout.addWidget(self.schwefel_radio)
 
         function_container = QWidget()  # Tworzymy kontener dla układu w poziomie
         function_container.setLayout(function_layout)  # Ustawiamy układ w poziomie w kontenerze
@@ -202,15 +217,15 @@ class MainWindow(QWidget):
         minmax_label = QLabel("Szukaj:")
         layout_items.append(minmax_label)
 
-        minmax_layout = QHBoxLayout()  
+        minmax_layout = QHBoxLayout()
         self.min_radio = QRadioButton("Minimum")
         self.min_radio.setChecked(True)
         self.min_radio.toggled.connect(self.set_min_max)
-        minmax_layout.addWidget(self.min_radio)  
+        minmax_layout.addWidget(self.min_radio)
 
         self.max_radio = QRadioButton("Maksimum")
         self.max_radio.toggled.connect(self.set_min_max)
-        minmax_layout.addWidget(self.max_radio)  
+        minmax_layout.addWidget(self.max_radio)
 
         minmax_container = QWidget()  # Tworzymy kontener dla układu w poziomie
         minmax_container.setLayout(minmax_layout)  # Ustawiamy układ w poziomie w kontenerze
@@ -254,6 +269,14 @@ class MainWindow(QWidget):
         crossing_prob_slider = makeSlider(1, 1000, self.crossingProb * 1000)
         crossing_prob_slider.valueChanged.connect(self.set_crossing_prob)
         layout_items.append(crossing_prob_slider)
+
+        # Inversion
+        self.inversionProbLabel = QLabel(f'Prawdopodobieństwo inwersji {self.inversionProb}')
+        layout_items.append(self.inversionProbLabel)
+
+        inversion_prob_slider = makeSlider(1, 1000, self.inversionProb * 1000)
+        inversion_prob_slider.valueChanged.connect(self.set_inversion_prob)
+        layout_items.append(inversion_prob_slider)
 
         # Selection
         selection_method_label = QLabel('Wybierz metodę selekcji')
@@ -307,6 +330,17 @@ class MainWindow(QWidget):
         mutation_slider = makeSlider(1, 1000, self.mutationProb * 1000)
         mutation_slider.valueChanged.connect(self.set_mutation_prob)
         layout_items.append(mutation_slider)
+
+         # Inwersja
+        inversion_label = QLabel('Wybierz formę inwersji')
+        layout_items.append(inversion_label)
+
+        inversion_combo_box = QComboBox(self)
+
+        inversion_combo_box.addItems(InversionMethods.ALL_OPTIONS_STRING.value)
+
+        inversion_combo_box.currentIndexChanged.connect(self.set_inversion_method)
+        layout_items.append(inversion_combo_box)
 
         # retrun of learn
         self.resLabel = QLabel('Wyniki:')
