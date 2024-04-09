@@ -1,9 +1,8 @@
 import sys
-from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, MinMax, FunctionsOptions
+from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, MinMax, FunctionsOptions, InversionMethods
 from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QLabel, QComboBox, QRadioButton, \
     QHBoxLayout
 
-from Helpers.functions import rastrigin, schwefel
 from Helpers.layout import makeSlider
 from Helpers.lern import Model
 
@@ -13,8 +12,10 @@ class MainWindow(QWidget):
     numberOfParents = 30
     numberOfChromosome = 24
     numberOfEpoch = 100
+    elitismRate = 0.1
     crossingProb = 0.1
     mutationProb = 0.1
+    inversionProb = 0.1
     numberOfDimensions = 2
     q = 1
     tournament_size = 1
@@ -22,22 +23,27 @@ class MainWindow(QWidget):
     selectionName = SelectionMechods.BEST_STRING.value
     crossingName = CrossingMechods.SINGLE_POINT_STRING.value
     mutationName = MutationMechods.EDGE_STRING.value
+    inversionName = InversionMethods.TWO_POINT_STRING.value
     minmax = MinMax.MIN
     selection_method = SelectionMechods.BEST
     crossing_method = CrossingMechods.SINGLE_POINT
     mutation_method = MutationMechods.EDGE
     func = FunctionsOptions.RASTRIGIN
+    inversion_method = InversionMethods.TWO_POINT
 
     def start_calc(self):
         local_model = Model(number_of_epoch=self.numberOfEpoch,
                             size_of_population=self.populationSize,
                             chromosome_length=self.numberOfChromosome,
                             number_of_parents=self.numberOfParents,
+                            elitism_rate = self.elitismRate,
                             crossing_function=self.crossing_method,
                             mutation_function=self.mutation_method,
                             selection_function=self.selection_method,
                             crossing_probability=self.crossingProb,
                             mutation_prob=self.mutationProb,
+                            inversion_prob=self.inversionProb,
+                            inversion_function=self.inversion_method,
                             number_of_dimensions=self.numberOfDimensions,
                             func=self.func,
                             title=f'{self.selectionName} - {self.crossingName}',
@@ -115,6 +121,12 @@ class MainWindow(QWidget):
                 self.mutationName = MutationMechods.DOUBLE_POINT_STRING.value
                 self.mutation_method = MutationMechods.DOUBLE_POINT
 
+    def set_inversion_method(self, option: int):
+        match option:
+            case InversionMethods.TWO_POINT.value:
+                self.inversionName = InversionMethods.TWO_POINT_STRING.value
+                self.inversion_method = InversionMethods.TWO_POINT
+
     def set_population_size(self, val):
         self.populationSize = val
         self.populationSizeLabel.setText(f'Wielkość populacji {self.populationSize}')
@@ -135,6 +147,10 @@ class MainWindow(QWidget):
         self.numberOfChromosome = val
         self.numberOfChromosomeLabel.setText(f'Długość chromosomu {self.numberOfChromosome}')
 
+    def set_elitism_rate(self, val):
+        self.elitismRate = val / 1000
+        self.elitismRateLabel.setText(f'Procent osobników elitarnych {self.elitismRate}')
+
     def set_crossing_prob(self, val):
         self.crossingProb = val / 1000
         self.crossingProbLabel.setText(f'Prawdopodobieństwo krzyżowania {self.crossingProb}')
@@ -142,6 +158,10 @@ class MainWindow(QWidget):
     def set_mutation_prob(self, val):
         self.mutationProb = val / 1000
         self.mutationLabel.setText(f'Prawdopodobieństwo mutacji {self.mutationProb}')
+
+    def set_inversion_prob(self, val):
+        self.inversionProb = val / 1000
+        self.inversionProbLabel.setText(f'Prawdopodobieństwo inwersji {self.inversionProb}')
 
     def set_q(self, val):
         self.crossing_options_label.setText(f'q {val}')
@@ -249,6 +269,14 @@ class MainWindow(QWidget):
         num_of_epoch_slider.valueChanged.connect(self.set_number_of_epoch)
         layout_items.append(num_of_epoch_slider)
 
+         # Elitism
+        self.elitismRateLabel = QLabel(f'Procent osobników elitarnych {self.elitismRate}')
+        layout_items.append(self.elitismRateLabel)
+
+        elitism_rate_slider = makeSlider(1, 1000, self.elitismRate * 1000)
+        elitism_rate_slider.valueChanged.connect(self.set_elitism_rate)
+        layout_items.append(elitism_rate_slider)
+
         # Crossing
         crossing_layout = QHBoxLayout()
         crossing_layout.setContentsMargins(0, 0, 0, 0)
@@ -263,6 +291,14 @@ class MainWindow(QWidget):
         crossing_container = QWidget()
         crossing_container.setLayout(crossing_layout)
         layout_items.append(crossing_container)
+
+        # Inversion
+        self.inversionProbLabel = QLabel(f'Prawdopodobieństwo inwersji {self.inversionProb}')
+        layout_items.append(self.inversionProbLabel)
+
+        inversion_prob_slider = makeSlider(1, 1000, self.inversionProb * 1000)
+        inversion_prob_slider.valueChanged.connect(self.set_inversion_prob)
+        layout_items.append(inversion_prob_slider)
 
         # Selection
         selection_layout = QHBoxLayout()
@@ -337,6 +373,21 @@ class MainWindow(QWidget):
         mutation_prob_container = QWidget()
         mutation_prob_container.setLayout(mutation_prob_layout)
         layout_items.append(mutation_prob_container)
+
+        # Inwersja
+        inversion_layout = QHBoxLayout()
+        inversion_layout.setContentsMargins(0, 0, 0, 0)
+        inversion_label = QLabel('Wybierz formę inwersji')
+        inversion_layout.addWidget(inversion_label)
+
+        inversion_combo_box = QComboBox(self)
+        inversion_combo_box.addItems(InversionMethods.ALL_OPTIONS_STRING.value)
+        inversion_combo_box.currentIndexChanged.connect(self.set_inversion_method)
+        inversion_layout.addWidget(inversion_combo_box)
+
+        inversion_container = QWidget()
+        inversion_container.setLayout(inversion_layout)
+        layout_items.append(inversion_container)
 
         # Start
         button = QPushButton("Oblicz")

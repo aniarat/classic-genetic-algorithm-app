@@ -1,12 +1,15 @@
 import copy
+import math
 import random
 import time
 
-from Consts.enums import MinMax, CrossingMechods, SelectionMechods, MutationMechods, FunctionsOptions
+from Consts.enums import MinMax, CrossingMechods, SelectionMechods, MutationMechods, FunctionsOptions, \
+    InversionMethods as InversionMethodsEnum
 from Helpers.crossingMethods import SinglePointCrossover, MultivariateCrossover, PartialCopyCrossover, \
     ScanningCrossover, GrainCrossover, UniformCrossover, ThreePointCrossover, TwoPointCrossover
 from Helpers.decimalBinaryMath import binary_to_decimal
 from Helpers.functions import rastrigin, schwefel
+from Helpers.inversionMethod import InversionMethod
 from Helpers.mutationMethods import EdgeMutation, SinglePointMutation, TwoPointMutation
 from Helpers.parents import initPopulation
 import numpy as np
@@ -29,11 +32,14 @@ class Model:
                  size_of_population: int,
                  chromosome_length: int,
                  number_of_parents: int,
+                 elitism_rate: float,
                  crossing_probability: int,
                  crossing_function: CrossingMechods,
                  mutation_function: MutationMechods,
                  selection_function: SelectionMechods,
                  mutation_prob: float,
+                 inversion_function: InversionMethodsEnum,
+                 inversion_prob: float,
                  number_of_dimensions: int,
                  func: FunctionsOptions,
                  title,
@@ -44,15 +50,22 @@ class Model:
         self.size_of_population = size_of_population
         self.chromosome_length = chromosome_length
         self.number_of_parents = number_of_parents
+        self.elitism_rate = elitism_rate
         self.crossing_probability = crossing_probability
+        self.crossing_function = crossing_function
+        self.mutation_function = mutation_function
+        self.selection_function = selection_function
         self.mutation_prob = mutation_prob
+        self.inversion_prob = inversion_prob
         self.number_of_dimensions = number_of_dimensions
         self.func = func
         self.title = title
         self.init_population = initPopulation(chromosome_length, number_of_dimensions, size_of_population)
         self.direction = direction
+        #self.best_alive_percent = 0.2
 
-        self.func = rastrigin(number_of_dimensions) if func == FunctionsOptions.RASTRIGIN else schwefel(number_of_dimensions)
+        self.func = rastrigin(number_of_dimensions) if func == FunctionsOptions.RASTRIGIN else schwefel(
+            number_of_dimensions)
 
         match selection_function:
             case SelectionMechods.BEST:
@@ -89,6 +102,9 @@ class Model:
                 self.mutation_function = SinglePointMutation(number_of_dimensions).mutate
             case MutationMechods.DOUBLE_POINT:
                 self.mutation_function = TwoPointMutation(number_of_dimensions).mutate
+        match inversion_function:
+            case InversionMethodsEnum.TWO_POINT:
+                self.inversion_function = InversionMethod(number_of_dimensions).inverse
 
     def find_best_spec(self, fn, population, direction: MinMax):
         best_index = 0
@@ -100,6 +116,17 @@ class Model:
                     (fn(value1) < fn(value2) and direction == MinMax.MAX)):
                 best_index = i
         return population[best_index]
+
+    def worst_best_spec_index(self, fn, population, direction: MinMax) -> int:
+        best_index = 0
+        for i in range(1, len(population)):
+            value1 = self.binaryToDecimalSpec(population[best_index])
+            value2 = self.binaryToDecimalSpec(population[i])
+            if ((fn(value1) < fn(value2) and direction == MinMax.MIN)
+                    or
+                    (fn(value1) > fn(value2) and direction == MinMax.MAX)):
+                best_index = i
+        return best_index
 
     def getStartString(self):
         return_string = ''
@@ -132,6 +159,11 @@ class Model:
         self.best_spec.append(self.binaryToDecimalSpec(self.find_best_spec(self.func, population, self.direction)))
         self.best_values.append(self.func(self.best_spec[-1]))
 
+    def getBestAlive(self, population): # strategia elitarna
+        best_values = list(self.func(self.binaryToDecimalSpec(individual)) for individual in population)
+        best_quantity = math.floor(len(population) * self.elitism_rate)
+        return list(map(lambda x: x[1],sorted(zip(best_values, population))[:best_quantity]))
+
     @staticmethod
     def binaryToDecimalSpec(spec):
         return list(map(binary_to_decimal, spec))
@@ -143,7 +175,7 @@ class Model:
         self.best_spec = []
         self.start_time = time.perf_counter()
         population = self.init_population
-        for i in range(self.number_of_epoch):
+        for _ in range(self.number_of_epoch):
             is_best_alive = False
             all_res = list(self.func(self.binaryToDecimalSpec(individual)) for individual in population)
             self.appendToAllArrays(all_res, population)
@@ -153,6 +185,8 @@ class Model:
                 if random.random() >= self.crossing_probability:
                     temp_population += self.crossing_function(temp_population)
 
+            best_old_spec = self.getBestAlive(population)
+            best_old_spec = copy.deepcopy(best_old_spec)
             best_new_spec = self.find_best_spec(self.func, temp_population, self.direction)
 
             for spec_index in range(self.size_of_population):
@@ -165,7 +199,11 @@ class Model:
                     for chrom_index in range(self.number_of_dimensions):
                         temp_population[spec_index][chrom_index] = self.mutation_function(spec[chrom_index],
                                                                                           self.mutation_prob)
+            for i in range(len(temp_population)):
+                if random.random() >= self.inversion_prob:
+                    temp_population[i] = self.inversion_function(temp_population[i], self.inversion_prob)
 
+            temp_population += best_old_spec
             population = temp_population
 
         self.end_population = population
