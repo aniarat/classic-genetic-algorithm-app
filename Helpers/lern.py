@@ -1,8 +1,10 @@
 import copy
+import math
 import random
 import time
 
-from Consts.enums import MinMax, CrossingMechods, SelectionMechods, MutationMechods, FunctionsOptions, InversionMethods as InversionMethodsEnum
+from Consts.enums import MinMax, CrossingMechods, SelectionMechods, MutationMechods, FunctionsOptions, \
+    InversionMethods as InversionMethodsEnum
 from Helpers.crossingMethods import SinglePointCrossover, MultivariateCrossover, PartialCopyCrossover, \
     ScanningCrossover, GrainCrossover, UniformCrossover, ThreePointCrossover, TwoPointCrossover
 from Helpers.decimalBinaryMath import binary_to_decimal
@@ -60,8 +62,10 @@ class Model:
         self.title = title
         self.init_population = initPopulation(chromosome_length, number_of_dimensions, size_of_population)
         self.direction = direction
+        self.best_alive_percent = 0.2
 
-        self.func = rastrigin(number_of_dimensions) if func == FunctionsOptions.RASTRIGIN else schwefel(number_of_dimensions)
+        self.func = rastrigin(number_of_dimensions) if func == FunctionsOptions.RASTRIGIN else schwefel(
+            number_of_dimensions)
 
         match selection_function:
             case SelectionMechods.BEST:
@@ -113,6 +117,17 @@ class Model:
                 best_index = i
         return population[best_index]
 
+    def worst_best_spec_index(self, fn, population, direction: MinMax) -> int:
+        best_index = 0
+        for i in range(1, len(population)):
+            value1 = self.binaryToDecimalSpec(population[best_index])
+            value2 = self.binaryToDecimalSpec(population[i])
+            if ((fn(value1) < fn(value2) and direction == MinMax.MIN)
+                    or
+                    (fn(value1) > fn(value2) and direction == MinMax.MAX)):
+                best_index = i
+        return best_index
+
     def getStartString(self):
         return_string = ''
         map1 = map(binary_to_decimal, self.find_best_spec(self.func, self.init_population, self.direction))
@@ -144,6 +159,11 @@ class Model:
         self.best_spec.append(self.binaryToDecimalSpec(self.find_best_spec(self.func, population, self.direction)))
         self.best_values.append(self.func(self.best_spec[-1]))
 
+    def getBestAlive(self, population):
+        best_values = list(self.func(self.binaryToDecimalSpec(individual)) for individual in population)
+        best_quantity = math.floor(len(population) * self.best_alive_percent)
+        return list(map(lambda x: x[1],sorted(zip(best_values, population))[:best_quantity]))
+
     @staticmethod
     def binaryToDecimalSpec(spec):
         return list(map(binary_to_decimal, spec))
@@ -155,7 +175,7 @@ class Model:
         self.best_spec = []
         self.start_time = time.perf_counter()
         population = self.init_population
-        for i in range(self.number_of_epoch):
+        for _ in range(self.number_of_epoch):
             is_best_alive = False
             all_res = list(self.func(self.binaryToDecimalSpec(individual)) for individual in population)
             self.appendToAllArrays(all_res, population)
@@ -165,8 +185,9 @@ class Model:
                 if random.random() >= self.crossing_probability:
                     temp_population += self.crossing_function(temp_population)
 
-            best_old_spec = self.find_best_spec(self.func, population, self.direction) # szukanie najlepszego osobnika w starej populacji
-            best_new_spec = self.find_best_spec(self.func, temp_population, self.direction) # szukanie najlepszego osobnika w nowej populacji
+            best_old_spec = self.getBestAlive(population)
+            best_old_spec = copy.deepcopy(best_old_spec)
+            best_new_spec = self.find_best_spec(self.func, temp_population, self.direction)
 
             for spec_index in range(self.size_of_population):
                 spec = temp_population[spec_index]
@@ -177,12 +198,11 @@ class Model:
                     if random.random() >= self.mutation_prob:
                         temp_population[spec_index][chrom_index] = self.mutation_function(spec[chrom_index],
                                                                                           self.mutation_prob)
-
             for i in range(len(temp_population)):
                 if random.random() >= self.inversion_prob:
                     temp_population[i] = self.inversion_function(temp_population[i], self.inversion_prob)
 
-            temp_population.append(best_old_spec)
+            temp_population += best_old_spec
             population = temp_population
 
         self.end_population = population
