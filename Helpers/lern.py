@@ -160,8 +160,9 @@ class Model:
                 if not is_best_alive and spec == best_new_spec:
                     is_best_alive = True
                     continue
-                for chrom_index in range(self.number_of_dimensions):
-                    if random.random() >= self.mutation_prob:
+
+                if random.random() >= self.mutation_prob:
+                    for chrom_index in range(self.number_of_dimensions):
                         temp_population[spec_index][chrom_index] = self.mutation_function(spec[chrom_index],
                                                                                           self.mutation_prob)
 
