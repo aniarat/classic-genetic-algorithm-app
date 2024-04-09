@@ -62,7 +62,7 @@ class Model:
         self.title = title
         self.init_population = initPopulation(chromosome_length, number_of_dimensions, size_of_population)
         self.direction = direction
-        self.best_alive_percent = 0.2
+        #self.best_alive_percent = 0.2
 
         self.func = rastrigin(number_of_dimensions) if func == FunctionsOptions.RASTRIGIN else schwefel(
             number_of_dimensions)
@@ -159,9 +159,9 @@ class Model:
         self.best_spec.append(self.binaryToDecimalSpec(self.find_best_spec(self.func, population, self.direction)))
         self.best_values.append(self.func(self.best_spec[-1]))
 
-    def getBestAlive(self, population):
+    def getBestAlive(self, population): # strategia elitarna
         best_values = list(self.func(self.binaryToDecimalSpec(individual)) for individual in population)
-        best_quantity = math.floor(len(population) * self.best_alive_percent)
+        best_quantity = math.floor(len(population) * self.elitism_rate)
         return list(map(lambda x: x[1],sorted(zip(best_values, population))[:best_quantity]))
 
     @staticmethod
