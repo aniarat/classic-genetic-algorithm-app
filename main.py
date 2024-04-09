@@ -1,20 +1,11 @@
 import sys
-from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, InversionMethods, MinMax
-from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QSlider, QLabel, QComboBox, QCheckBox, QRadioButton, QHBoxLayout
-from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, MinMax, FunctionsOptions
+from Consts.enums import SelectionMechods, CrossingMechods, MutationMechods, MinMax, FunctionsOptions, InversionMethods
 from PySide6.QtWidgets import QApplication, QPushButton, QWidget, QVBoxLayout, QLabel, QComboBox, QRadioButton, \
     QHBoxLayout
 
-from Helpers.functions import rastrigin, schwefel
 from Helpers.layout import makeSlider
 from Helpers.lern import Model
 
-from Helpers.selectionMethods import BestSelection, RouletteWheelSelection, TournamentSelection
-from Helpers.crossingMethods import SinglePointCrossover, TwoPointCrossover, ThreePointCrossover, UniformCrossover, \
-    GrainCrossover, ScanningCrossover, PartialCopyCrossover, MultivariateCrossover
-
-from Helpers.mutationMethods import EdgeMutation, SinglePointMutation, TwoPointMutation
-from Helpers.inversionMethod import InversionMethod
 
 class MainWindow(QWidget):
     populationSize = 40
@@ -49,8 +40,8 @@ class MainWindow(QWidget):
                             selection_function=self.selection_method,
                             crossing_probability=self.crossingProb,
                             mutation_prob=self.mutationProb,
-                            inversion_prob = self.inversionProb,
-                            inversion_function = self.inversion_method,
+                            inversion_prob=self.inversionProb,
+                            inversion_function=self.inversion_method,
                             number_of_dimensions=self.numberOfDimensions,
                             func=self.func,
                             title=f'{self.selectionName} - {self.crossingName}',
@@ -369,7 +360,7 @@ class MainWindow(QWidget):
         mutation_prob_container.setLayout(mutation_prob_layout)
         layout_items.append(mutation_prob_container)
 
-         # Inwersja
+        # Inwersja
         inversion_layout = QHBoxLayout()
         inversion_layout.setContentsMargins(0, 0, 0, 0)
         inversion_label = QLabel('Wybierz formę inwersji')
