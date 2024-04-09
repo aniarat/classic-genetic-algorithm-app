@@ -30,6 +30,7 @@ class Model:
                  size_of_population: int,
                  chromosome_length: int,
                  number_of_parents: int,
+                 #elitism_rate: float,
                  crossing_probability: int,
                  crossing_function: CrossingMechods,
                  mutation_function: MutationMechods,
@@ -47,6 +48,7 @@ class Model:
         self.size_of_population = size_of_population
         self.chromosome_length = chromosome_length
         self.number_of_parents = number_of_parents
+        #self.elitism_rate = elitism_rate
         self.crossing_probability = crossing_probability
         self.crossing_function = crossing_function
         self.mutation_function = mutation_function
