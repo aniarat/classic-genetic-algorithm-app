@@ -12,6 +12,7 @@ class MainWindow(QWidget):
     numberOfParents = 30
     numberOfChromosome = 24
     numberOfEpoch = 100
+    elitismRate = 0.1
     crossingProb = 0.1
     mutationProb = 0.1
     inversionProb = 0.1
@@ -35,6 +36,7 @@ class MainWindow(QWidget):
                             size_of_population=self.populationSize,
                             chromosome_length=self.numberOfChromosome,
                             number_of_parents=self.numberOfParents,
+                            elitism_rate = self.elitismRate,
                             crossing_function=self.crossing_method,
                             mutation_function=self.mutation_method,
                             selection_function=self.selection_method,
@@ -144,6 +146,10 @@ class MainWindow(QWidget):
     def set_number_of_chromosome(self, val):
         self.numberOfChromosome = val
         self.numberOfChromosomeLabel.setText(f'Długość chromosomu {self.numberOfChromosome}')
+
+    def set_elitism_rate(self, val):
+        self.elitismRate = val / 1000
+        self.elitismRateLabel.setText(f'Procent osobników elitarnych {self.elitismRate}')
 
     def set_crossing_prob(self, val):
         self.crossingProb = val / 1000
@@ -262,6 +268,14 @@ class MainWindow(QWidget):
         num_of_epoch_slider = makeSlider(1, 10_000, self.numberOfEpoch)
         num_of_epoch_slider.valueChanged.connect(self.set_number_of_epoch)
         layout_items.append(num_of_epoch_slider)
+
+         # Elitism
+        self.elitismRateLabel = QLabel(f'Procent osobników elitarnych {self.elitismRate}')
+        layout_items.append(self.elitismRateLabel)
+
+        elitism_rate_slider = makeSlider(1, 1000, self.elitismRate * 1000)
+        elitism_rate_slider.valueChanged.connect(self.set_elitism_rate)
+        layout_items.append(elitism_rate_slider)
 
         # Crossing
         crossing_layout = QHBoxLayout()
